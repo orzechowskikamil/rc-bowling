@@ -26,12 +26,17 @@
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
 
+
     function createScene() {
         var scene = new BABYLON.Scene(engine);
         scene.clearColor = new BABYLON.Color3(0, 0, 0);
 
+        scene.debugLayer.show();
+        var assetsManager = new BABYLON.AssetsManager(scene);
+
+
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 1.5, -4), scene);
-        camera.setTarget(new BABYLON.Vector3(0,0.3,2));
+        camera.setTarget(new BABYLON.Vector3(0, 0.3, 2));
         camera.attachControl(canvas, false);
 
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0.3, 4, 0), scene);
@@ -43,6 +48,7 @@
         var ground = BABYLON.Mesh.CreatePlane('ground', 100, scene, false);
         ground.position = new BABYLON.Vector3(0, 0, 0);
         ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+
         var groundImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: 0,
             friction: 0.3,
@@ -50,52 +56,72 @@
         }, scene);
 
 
-        var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 10, 0.2, scene);
-        bowlingBall.position = new BABYLON.Vector3(0, 5, 0);
-        var bowlingBallImpostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
-            mass: 4,
-            friction: 0.2,
-            restitution: 0.2
-        }, scene);
+        var meshTask = assetsManager.addMeshTask('bowling task', '', "assets/", "bs.obj");
+        meshTask.onSuccess = function (result) {
+            var bowlingBallMesh = result.loadedMeshes[1];
+            var pinMesh = result.loadedMeshes[0];
+            bowlingBallMesh.dispose();
 
-        var pinPositions = [
-            {x: 0, y: 6},
-            {x: -0.20, y: 6.30},
-            {x: 0.20, y: 6.30},
-            {x: -0.4, y: 6.60},
-            {x: 0, y: 6.60},
-            {x: 0.4, y: 6.60},
-            {x: -0.2, y: 6.90},
-            {x: 0.2, y: 6.90},
-            {x: 0.6, y: 6.90},
-            {x: -0.6, y: 6.90},
 
-        ];
-        pinPositions.forEach(function (val, i, arr) {
-            var pin = new BABYLON.Mesh.CreateCylinder('pin' + i, 0.38, 0.07, 0.12, 10, 10, scene);
-            pin.position = new BABYLON.Vector3(val.x, 0.25, val.y);
-            pin.material = new BABYLON.StandardMaterial('pin-material', scene);
-            pin.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-            new BABYLON.PhysicsImpostor(pin, BABYLON.PhysicsImpostor.CylinderImpostor, {
-                mass: 1.53,
+            var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, 0.21, scene);
+            bowlingBall.position = new BABYLON.Vector3(0, 5, 0);
+
+            var modelScale=0.015;
+            var modelScaleVector = new BABYLON.Vector3(modelScale,modelScale,modelScale);
+            pinMesh.scaling = modelScaleVector;
+
+            var bowlingBallImpostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
+                mass: 4,
                 friction: 0.2,
-                restitution: 0.3
+                restitution: 0.2
             }, scene);
-        });
+
+            var pinPositions = [
+                {x: 0, y: 6},
+                {x: -0.20, y: 6.30},
+                {x: 0.20, y: 6.30},
+                {x: -0.4, y: 6.60},
+                {x: 0, y: 6.60},
+                {x: 0.4, y: 6.60},
+                {x: -0.2, y: 6.90},
+                {x: 0.2, y: 6.90},
+                {x: 0.6, y: 6.90},
+                {x: -0.6, y: 6.90},
+
+            ];
+            pinPositions.forEach(function (val, i, arr) {
+                var pin = pinMesh.clone('pin-' + i);
+                pin.position = new BABYLON.Vector3(val.x, 0.25, val.y);
+                new BABYLON.PhysicsImpostor(pin, BABYLON.PhysicsImpostor.CylinderImpostor, {
+                    mass: 1.53,
+                    friction: 0.2,
+                    restitution: 0.3
+                }, scene);
+            });
+
+            pinMesh.dispose();
 
 
-        setTimeout(function () {
-            bowlingBallImpostor.applyImpulse(new BABYLON.Vector3(Math.random()*0.6-0.3 ,1, 50), bowlingBall.getAbsolutePosition());
-        }, 2000);
+            setTimeout(function () {
+                bowlingBallImpostor.applyImpulse(new BABYLON.Vector3(Math.random() * 2 - 0.3, 5, 50), bowlingBall.getAbsolutePosition());
+            }, 2000);
+
+
+        };
+
+        assetsManager.onFinish = function () {
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+        };
+
+        assetsManager.load();
 
         return scene;
     }
 
     var scene = createScene();
 
-    engine.runRenderLoop(function () {
-        scene.render();
-    });
 
     window.addEventListener("resize", function () {
         engine.resize();
