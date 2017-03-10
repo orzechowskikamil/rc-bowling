@@ -23,6 +23,22 @@
 <canvas id="babylon-canvas"></canvas>
 <script type="text/javascript">
 
+    var maxBallWeight = 7.26;
+    var minBallWeight = 2.20;
+    var maxBallDiameter = 0.21;
+    var minBallDiameter = 0.16;
+    var ballWeight = maxBallWeight;
+    var ballDiameter = maxBallDiameter;
+    var pinHeight = 0.38;
+    var pinWeight = 1.5;
+    var throwForce = 50;
+    var throwForceRandomness=5;
+    var trackWidth = 1;
+    var trackDepth = 18;
+    var sinkDepth=15;
+    var pinsPosition = {x: 0, y: 2, z: trackDepth-2};
+    var spaceBetweenPins = {x: 0.13, z: 0.20};
+
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
 
@@ -44,58 +60,130 @@
 
         var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
         scene.enablePhysics(gravityVector, new BABYLON.CannonJSPlugin());
-
-        var ground = BABYLON.Mesh.CreatePlane('ground', 100, scene, false);
-        ground.position = new BABYLON.Vector3(0, 0, 0);
-        ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
-
-        var groundImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: 0,
-            friction: 0.3,
-            restitution: 1
-        }, scene);
+//
+//        var ground = BABYLON.Mesh.CreatePlane('ground', 100, scene);
+//        ground.position = new BABYLON.Vector3(0, 0, 0);
+//        ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+//
+//
+//        var groundImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {
+//            mass: 0,
+//            friction: 0.3,
+//            restitution: 1
+//        }, scene);
 
 
         var meshTask = assetsManager.addMeshTask('bowling task', '', "assets/", "bs.obj");
         meshTask.onSuccess = function (result) {
+
             var bowlingBallMesh = result.loadedMeshes[1];
             var pinMesh = result.loadedMeshes[0];
             bowlingBallMesh.dispose();
 
 
-            var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, 0.21, scene);
-            bowlingBall.position = new BABYLON.Vector3(0, 5, 0);
+            var floor = BABYLON.MeshBuilder.CreateBox('floor', {
+                width: trackWidth,
+                height: 0.2,
+                depth: trackDepth
+            }, scene);
+            floor.position = new BABYLON.Vector3(0, 0, trackDepth/2);
 
-            var modelScale=0.015;
-            var modelScaleVector = new BABYLON.Vector3(modelScale,modelScale,modelScale);
+            var sink= BABYLON.MeshBuilder.CreateBox('sink-1', {
+                width:0.3,
+                height:0.2,
+                depth:sinkDepth
+            },scene);
+            sink.position=new BABYLON.Vector3(0.3/2+trackWidth/2, -0.1,sinkDepth/2);
+
+            var wsink= BABYLON.MeshBuilder.CreateBox('wsink-1', {
+                width:0.3,
+                height:0.2,
+                depth:sinkDepth
+            },scene);
+            wsink.position=new BABYLON.Vector3(0.3/2+trackWidth/2+0.3, 0,sinkDepth/2);
+
+
+            var sink2= BABYLON.MeshBuilder.CreateBox('sink-2', {
+                width:0.3,
+                height:0.2,
+                depth:sinkDepth
+            },scene);
+            sink2.position=new BABYLON.Vector3(-1*(0.3/2+trackWidth/2), -0.1,sinkDepth /2);
+
+
+            var wsink2= BABYLON.MeshBuilder.CreateBox('wsink-2', {
+                width:0.3,
+                height:0.2,
+                depth:sinkDepth
+            },scene);
+            wsink2.position=new BABYLON.Vector3(-1*(0.3/2+trackWidth/2+0.3), 0,sinkDepth /2);
+
+
+
+            var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, ballDiameter, scene);
+            bowlingBall.position = new BABYLON.Vector3(0, 1, 0);
+
+            var modelScale = 0.014 * (pinHeight / 0.38);
+            var modelScaleVector = new BABYLON.Vector3(modelScale, modelScale, modelScale);
             pinMesh.scaling = modelScaleVector;
 
             var bowlingBallImpostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
-                mass: 4,
+                mass: ballWeight,
                 friction: 0.2,
                 restitution: 0.2
             }, scene);
 
-            var pinPositions = [
-                {x: 0, y: 6},
-                {x: -0.20, y: 6.30},
-                {x: 0.20, y: 6.30},
-                {x: -0.4, y: 6.60},
-                {x: 0, y: 6.60},
-                {x: 0.4, y: 6.60},
-                {x: -0.2, y: 6.90},
-                {x: 0.2, y: 6.90},
-                {x: 0.6, y: 6.90},
-                {x: -0.6, y: 6.90},
+            var floorImpostor = new BABYLON.PhysicsImpostor(floor, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction: 0.5,
+                restitution: 0
+            }, scene);
 
+            var sinkImpostor = new BABYLON.PhysicsImpostor(sink, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction: 0.5,
+                restitution: 0
+            }, scene);
+
+            var sink2Impostor = new BABYLON.PhysicsImpostor(sink2, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction: 0.5,
+                restitution: 0
+            }, scene);
+
+            var wsinkImpostor = new BABYLON.PhysicsImpostor(wsink, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction: 0.5,
+                restitution: 0
+            }, scene);
+
+            var wsink2Impostor = new BABYLON.PhysicsImpostor(wsink2, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0,
+                friction: 0.5,
+                restitution: 0
+            }, scene);
+
+
+            var pinPositions = [
+                {x: 0, y: 0},
+                {x: -1 * spaceBetweenPins.x, y: 1 * spaceBetweenPins.z},
+                {x: 1 * spaceBetweenPins.x, y: 1 * spaceBetweenPins.z},
+                {x: -2 * spaceBetweenPins.x, y: 2 * spaceBetweenPins.z},
+                {x: 0, y: 2 * spaceBetweenPins.z},
+                {x: 2 * spaceBetweenPins.x, y: 2 * spaceBetweenPins.z},
+                {x: -1 * spaceBetweenPins.x, y: 3 * spaceBetweenPins.z},
+                {x: 1 * spaceBetweenPins.x, y: 3 * spaceBetweenPins.z},
+                {x: 3 * spaceBetweenPins.x, y: 3 * spaceBetweenPins.z},
+                {x: -3 * spaceBetweenPins.x, y: 3 * spaceBetweenPins.z},
             ];
+
             pinPositions.forEach(function (val, i, arr) {
                 var pin = pinMesh.clone('pin-' + i);
-                pin.position = new BABYLON.Vector3(val.x, 0.25, val.y);
+                pin.position = new BABYLON.Vector3(val.x + pinsPosition.x, pinsPosition.y, val.y + pinsPosition.z);
                 new BABYLON.PhysicsImpostor(pin, BABYLON.PhysicsImpostor.CylinderImpostor, {
-                    mass: 1.53,
+                    mass: pinWeight,
                     friction: 0.2,
-                    restitution: 0.3
+                    restitution: 0.1
                 }, scene);
             });
 
@@ -103,7 +191,7 @@
 
 
             setTimeout(function () {
-                bowlingBallImpostor.applyImpulse(new BABYLON.Vector3(Math.random() * 2 - 0.3, 5, 50), bowlingBall.getAbsolutePosition());
+                bowlingBallImpostor.applyImpulse(new BABYLON.Vector3(Math.random() * throwForceRandomness-throwForceRandomness/2, 5, throwForce), bowlingBall.getAbsolutePosition());
             }, 2000);
 
 
@@ -121,6 +209,9 @@
     }
 
     var scene = createScene();
+    var physicsEngine = scene.getPhysicsEngine();
+
+    physicsEngine.setTimeStep(1 / 60);
 
 
     window.addEventListener("resize", function () {
