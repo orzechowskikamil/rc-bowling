@@ -40,9 +40,19 @@
     var spaceBetweenPins = {x: 0.13, z: 0.20};
     var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
 
+    var trackDef = {
+        width: 1, height: 0.2, depth: 18
+    };
+
     var sinkDef = {
         width: 0.3,
         height: 0.1,
+        depth: 15
+    };
+
+    var sinkWallDef = {
+        width: 0.1,
+        height: 0.2,
         depth: 15
     };
 
@@ -62,9 +72,19 @@
         var lightGradient = 2;
         var lightAngleRad = 1.6;
         var light = new BABYLON.SpotLight("light", lightPosition, lightDirection, lightAngleRad, lightGradient, scene);
-        light.diffuse = new BABYLON.Color3(1,1,1);
+        light.diffuse = new BABYLON.Color3(1, 1, 1);
         light.specular = new BABYLON.Color3(1, 1, 1);
 
+
+        var trackMaterial = new BABYLON.StandardMaterial('track-texture', scene);
+        var texture = new BABYLON.Texture('assets/track.jpg', scene);
+        texture.uScale = 5;
+        texture.vScale = 1;
+        trackMaterial.diffuseTexture = texture;
+
+        var ballMaterial=new BABYLON.StandardMaterial('ball-texture',scene);
+        var ballTexture=new BABYLON.Texture('assets/ball.png',scene);
+        ballMaterial.diffuseTexture=ballTexture;
 
         var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
         var renderList = shadowGenerator.getShadowMap().renderList;
@@ -77,7 +97,6 @@
 
 //        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0.3, 4, 0), scene);
 //        light.intensity = 0.9;
-
 
 
         scene.enablePhysics(gravityVector, new BABYLON.CannonJSPlugin());
@@ -108,7 +127,8 @@
                 depth: trackDepth
             }, scene);
             floor.position = new BABYLON.Vector3(0, 0, trackDepth / 2);
-            floor.receiveShadows=true;
+            floor.receiveShadows = true;
+            floor.material = trackMaterial;
 
             var sink = BABYLON.MeshBuilder.CreateBox('sink-1', {
                 width: 0.3,
@@ -143,6 +163,7 @@
 
             var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, ballDiameter, scene);
             bowlingBall.position = new BABYLON.Vector3(0, 1, 0);
+            bowlingBall.material= ballMaterial;
 
             renderList.push(bowlingBall);
 
