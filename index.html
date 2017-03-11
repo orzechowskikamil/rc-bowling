@@ -27,49 +27,54 @@
 
     var throwDef = {
         force: 50,
-        randomness: 9
+        randomness: 15
     };
 
     var ballDef = {
-        maxWeight: 7.26,
-        minWeight: 2.20,
-        weight: 7.26,
+        maxMass: 7.26,
+        minMass: 2.20,
+        mass: 7.26,
         maxDiameter: 0.21,
         minDiameter: 0.16,
-        diameter: 0.21
+        diameter: 0.21,
+        friction: 0.1,
+        restitution: 0.1
     };
 
     var trackDef = {
         width: 1,
-        height: 0.2,
+        height: 0.3,
         depth: 18,
         mass: 0,
-        friction: 0.5,
-        restitution: 0
+        friction: 1,
+        restitution: 0.1
     };
     trackDef.position = new BABYLON.Vector3(0, 0, trackDef.depth / 2);
 
     var pinDef = {
         height: 0.38,
-        weight: 1.5,
-        modelScale: 0.031,
         mass: 1.5,
-        friction: 0.5,
-        restitution: 0.05,
-        position: {x: 0, y: 2, z: trackDef.depth - 2},
-        spacing: {x: 0.13, z: 0.20}
+        modelScale: 0.025,
+        friction: 1,
+        restitution: 0.1,
+        position: {x: 0, y: 2, z: trackDef.depth - 0.9},
+        spacing: {x: 0.13, z: 0.20},
+        linearDamping: 0.5,
+        angularDamping: 0.5
     };
 
     var sinkDef = {
-        width: 0.3,
-        height: 0.1,
-        depth: 15
+        width: 0.17,
+        height: 0.25,
+        mass: 0,
+        depth: 18
     };
 
     var sinkWallDef = {
         width: 0.1,
-        height: 0.2,
-        depth: 15
+        height: 0.3,
+        mass: 0,
+        depth: 18
     };
 
     var canvas = document.querySelector("#babylon-canvas");
@@ -92,14 +97,28 @@
         light.specular = new BABYLON.Color3(1, 1, 1);
 
 
-        var trackMaterial = new BABYLON.StandardMaterial('track-texture', scene);
+        var woodMaterial = new BABYLON.StandardMaterial('track-texture', scene);
         var texture = new BABYLON.Texture('assets/track.jpg', scene);
         texture.uScale = 5;
         texture.vScale = 1;
-        trackMaterial.diffuseTexture = texture;
+        woodMaterial.diffuseTexture = texture;
 
         var ballMaterial = new BABYLON.StandardMaterial('ball-texture', scene);
         ballMaterial.diffuseTexture = new BABYLON.Texture('assets/ball.png', scene);
+
+        var plasticMaterial = new BABYLON.StandardMaterial('plastic-texture', scene);
+        var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
+        plasticTexture.uScale = 5;
+        plasticTexture.vScale = 1;
+        plasticMaterial.diffuseTexture = plasticTexture;
+
+
+        var pinMaterial = new BABYLON.StandardMaterial('pin-texture', scene);
+        var pinTexture = new BABYLON.Texture('assets/pin.png', scene);
+        pinTexture.uScale = 1;
+        pinTexture.vScale = 1.9;
+        pinMaterial.diffuseTexture = pinTexture;
+
 
         var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
         var renderList = shadowGenerator.getShadowMap().renderList;
@@ -120,7 +139,7 @@
         }, scene);
         trackMesh.position = trackDef.position;
         trackMesh.receiveShadows = true;
-        trackMesh.material = trackMaterial;
+        trackMesh.material = woodMaterial;
         trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: trackDef.mass,
             friction: trackDef.friction,
@@ -133,7 +152,8 @@
             height: sinkDef.height,
             depth: sinkDef.depth
         }, scene);
-        leftSinkMesh.position = new BABYLON.Vector3(sinkDef.width / 2 + trackDef.width / 2, -0.1, sinkDef.depth / 2);
+        leftSinkMesh.material = plasticMaterial;
+        leftSinkMesh.position = new BABYLON.Vector3(sinkDef.width / 2 + trackDef.width / 2, 0, sinkDef.depth / 2);
         leftSinkMesh.impostor = new BABYLON.PhysicsImpostor(leftSinkMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: sinkDef.mass,
             friction: sinkDef.friction,
@@ -146,6 +166,7 @@
             height: sinkWallDef.height,
             depth: sinkWallDef.depth
         }, scene);
+        leftSinkWallMesh.material = woodMaterial;
         leftSinkWallMesh.position = new BABYLON.Vector3(sinkDef.width + trackDef.width / 2 + sinkWallDef.width / 2, 0, sinkDef.depth / 2);
         leftSinkWallMesh.impostor = new BABYLON.PhysicsImpostor(leftSinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: sinkWallDef.mass,
@@ -158,7 +179,8 @@
             height: sinkDef.height,
             depth: sinkDef.depth
         }, scene);
-        rightSinkMesh.position = new BABYLON.Vector3(-1 * (sinkDef.width / 2 + trackDef.width / 2), -0.1, sinkDef.depth / 2);
+        rightSinkMesh.material = plasticMaterial;
+        rightSinkMesh.position = new BABYLON.Vector3(-1 * (sinkDef.width / 2 + trackDef.width / 2), 0, sinkDef.depth / 2);
         rightSinkMesh.impostor = new BABYLON.PhysicsImpostor(rightSinkMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: sinkDef.mass,
             friction: sinkDef.friction,
@@ -170,6 +192,7 @@
             height: sinkWallDef.height,
             depth: sinkWallDef.depth
         }, scene);
+        rightSinkWallMesh.material = woodMaterial;
         rightSinkWallMesh.position = new BABYLON.Vector3(-1 * (sinkDef.width + trackDef.width / 2 + sinkWallDef.width / 2), 0, sinkDef.depth / 2);
         rightSinkWallMesh.impostor = new BABYLON.PhysicsImpostor(rightSinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
             mass: sinkWallDef.mass,
@@ -181,7 +204,7 @@
         bowlingBall.position = new BABYLON.Vector3(0, 1, 0);
         bowlingBall.material = ballMaterial;
         bowlingBall.impostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
-            mass: ballDef.weight,
+            mass: ballDef.mass,
             friction: ballDef.friction,
             restitution: ballDef.restitution
         }, scene);
@@ -197,6 +220,7 @@
 
             var pinModelScaling = pinDef.modelScale * pinDef.height;
             pinMeshFromOBJ.scaling = new BABYLON.Vector3(pinModelScaling, pinModelScaling, pinModelScaling);
+            pinMeshFromOBJ.material = pinMaterial;
 
             var pinPositions = [
                 {x: 0, y: 0},
@@ -215,16 +239,18 @@
                 var pinMesh = pinMeshFromOBJ.clone('pin-' + i);
                 pinMesh.position = new BABYLON.Vector3(val.x + pinDef.position.x, pinDef.position.y, val.y + pinDef.position.z);
                 pinMesh.impostor = new BABYLON.PhysicsImpostor(pinMesh, BABYLON.PhysicsImpostor.CylinderImpostor, {
-                    mass: pinDef.weight,
+                    mass: pinDef.mass,
                     friction: pinDef.friction,
-                    restitution: pinDef.restitution
+                    restitution: pinDef.restitution,
+                    nativeOptions: {
+                        linearDamping: pinDef.linearDamping,
+                        angularDamping: pinDef.angularDamping
+                    }
                 }, scene);
                 renderList.push(pinMesh);
             });
 
             pinMeshFromOBJ.dispose();
-
-
         };
 
         setTimeout(function () {
