@@ -2,88 +2,90 @@ window.rcBowling.track = (function () {
 
     var def = window.rcBowling.definitions;
 
+    var plasticMaterial;
+    var woodMaterial;
 
-    function addTrackToScene(scene) {
-        var woodMaterial = new BABYLON.StandardMaterial('track-texture', scene);
-        var woodTexture = new BABYLON.Texture('assets/track.jpg', scene);
+
+    function loadMaterials(scene) {
+        var woodTexture = new BABYLON.Texture('assets/wood.jpg', scene);
         woodTexture.uScale = 5;
         woodTexture.vScale = 1;
+        woodMaterial = new BABYLON.StandardMaterial('wood-material', scene);
         woodMaterial.diffuseTexture = woodTexture;
 
+     //   var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
+    //    plasticTexture.uScale = 25;
+     //   plasticTexture.vScale = 1;
+        plasticMaterial = new BABYLON.StandardMaterial('plastic-material', scene);
+        plasticMaterial.diffuseColor=new BABYLON.Color3(0.2,0.2,0.2);
+    }
 
-        var plasticMaterial = new BABYLON.StandardMaterial('plastic-texture', scene);
-        var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
-        plasticTexture.uScale = 5;
-        plasticTexture.vScale = 1;
-        plasticMaterial.diffuseTexture = plasticTexture;
 
+    function addSinkToScene(name, positionVector, scene) {
+        var width = def.sink.width;
+        var height = 0.01;
+        var depth = def.sink.depth;
+        var maxAngle = Math.PI * 0.2;
+        var maxX = width * 0.35;
+        var maxY = height * 1.3;
 
-        var trackMesh = BABYLON.MeshBuilder.CreateBox('track', {
-            width: def.track.width,
-            height: def.track.height,
-            depth: def.track.depth
+        [{x: -1 * maxX, y: maxY, angle: -1 * maxAngle},
+            {x: -0.7 * maxX, y: maxY * 0.5, angle: -0.7 * maxAngle},
+            {x: -0.3 * maxX, y: maxY * 0.2, angle: -0.4 * maxAngle},
+            {x: 0.3 * maxX, y: maxY * 0.2, angle: 0.4 * maxAngle},
+            {x: 0.7 * maxX, y: maxY * 0.5, angle: 0.7 * maxAngle},
+            {x: maxX, y: maxY, angle: maxAngle}
+        ].forEach(function (val, i) {
+            var sinkWallMesh = BABYLON.MeshBuilder.CreateBox(name + '-' + i, {
+                width: width / 3,
+                height: height,
+                depth: depth
+            }, scene);
+            sinkWallMesh.material = plasticMaterial;
+            sinkWallMesh.position = positionVector.add(new BABYLON.Vector3(val.x, val.y, 0));
+            sinkWallMesh.rotation = new BABYLON.Vector3(0, 0, val.angle);
+            sinkWallMesh.impostor = new BABYLON.PhysicsImpostor(sinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: def.sink.mass,
+                friction: def.sink.friction,
+                restitution: def.sink.restitution
+            }, scene);
+        });
+    }
+
+    function addFloorToScene(name, width, depth, position, u, v, scene) {
+        var trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
+            width: width,
+            height: def.floor.height,
+            depth: depth,
         }, scene);
-        trackMesh.position = def.track.position;
+        trackMesh.position = position;
         trackMesh.receiveShadows = true;
-        trackMesh.material = woodMaterial;
+        trackMesh.material = woodMaterial.clone('floor-' + name + '-material');  debugger
+        trackMesh.material.diffuseTexture.uScale = u;
+        trackMesh.material.diffuseTexture.vScale = v;
         trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.track.mass,
-            friction: def.track.friction,
-            restitution: def.track.restitution
+            mass: def.floor.mass,
+            friction: def.floor.friction,
+            restitution: def.floor.restitution
         }, scene);
+    }
 
-        var leftSinkMesh = BABYLON.MeshBuilder.CreateBox('left-sink', {
-            width: def.sink.width,
-            height: def.sink.height,
-            depth: def.sink.depth
-        }, scene);
-        leftSinkMesh.material = plasticMaterial;
-        leftSinkMesh.position = new BABYLON.Vector3(def.sink.width / 2 + def.track.width / 2, 0, def.sink.depth / 2);
-        leftSinkMesh.impostor = new BABYLON.PhysicsImpostor(leftSinkMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.sink.mass,
-            friction: def.sink.friction,
-            restitution: def.sink.restitution
-        }, scene);
+    function addTrackToScene(scene) {
+        loadMaterials(scene);
+
+        [
+            {name: 'track', def: def.floor.track},
+            {name: 'front', def: def.floor.front},
+            {name: 'left', def: def.floor.left},
+            {name: 'right', def: def.floor.right}
+        ].forEach(function (val, i, arr) {
+            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, scene);
+        });
 
 
-        var leftSinkWallMesh = BABYLON.MeshBuilder.CreateBox('left-sink-wall', {
-            width: def.sinkWall.width,
-            height: def.sinkWall.height,
-            depth: def.sinkWall.depth
-        }, scene);
-        leftSinkWallMesh.material = woodMaterial;
-        leftSinkWallMesh.position = new BABYLON.Vector3(def.sink.width + def.track.width / 2 + def.sinkWall.width / 2, 0, def.sink.depth / 2);
-        leftSinkWallMesh.impostor = new BABYLON.PhysicsImpostor(leftSinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.sinkWall.mass,
-            friction: def.sinkWall.friction,
-            restitution: def.sinkWall.restitution
-        }, scene);
+        addSinkToScene('left-sink', def.sink.leftSinkPosition, scene);
+        addSinkToScene('right-sink', def.sink.rightSinkPosition, scene);
 
-        var rightSinkMesh = BABYLON.MeshBuilder.CreateBox('right-sink', {
-            width: def.sink.width,
-            height: def.sink.height,
-            depth: def.sink.depth
-        }, scene);
-        rightSinkMesh.material = plasticMaterial;
-        rightSinkMesh.position = new BABYLON.Vector3(-1 * (def.sink.width / 2 + def.track.width / 2), 0, def.sink.depth / 2);
-        rightSinkMesh.impostor = new BABYLON.PhysicsImpostor(rightSinkMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.sink.mass,
-            friction: def.sink.friction,
-            restitution: def.sink.restitution
-        }, scene);
-
-        var rightSinkWallMesh = BABYLON.MeshBuilder.CreateBox('right-sink-wall', {
-            width: def.sinkWall.width,
-            height: def.sinkWall.height,
-            depth: def.sinkWall.depth
-        }, scene);
-        rightSinkWallMesh.material = woodMaterial;
-        rightSinkWallMesh.position = new BABYLON.Vector3(-1 * (def.sink.width + def.track.width / 2 + def.sinkWall.width / 2), 0, def.sink.depth / 2);
-        rightSinkWallMesh.impostor = new BABYLON.PhysicsImpostor(rightSinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.sinkWall.mass,
-            friction: def.sinkWall.friction,
-            restitution: def.sinkWall.restitution
-        }, scene);
     }
 
     return {
