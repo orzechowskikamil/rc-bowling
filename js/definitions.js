@@ -6,7 +6,7 @@ window.rcBowling.definitions = (function () {
 
     def.throw = {
         force: 50,
-        randomness: 5
+        randomness: 4
     };
 
     def.ball = {
@@ -16,7 +16,7 @@ window.rcBowling.definitions = (function () {
         maxDiameter: 0.21,
         minDiameter: 0.16,
         diameter: 0.21,
-        friction: 0.1,
+        friction: 0.2,
         restitution: 0.1
     };
 
@@ -26,16 +26,17 @@ window.rcBowling.definitions = (function () {
             depth: 18,
             u: 5,
             v: 1,
+            physics:true
         },
         left: {
             width: 5,
-            depth: 18,
+            depth: 17,
             u: 5,
             v: 5
         },
         right: {
             width: 5,
-            depth: 18,
+            depth: 17,
             u: 5,
             v: 5
         },
@@ -47,14 +48,14 @@ window.rcBowling.definitions = (function () {
         },
         height: 0.3,
         mass: 0,
-        friction: 1,
+        friction: 0.1,
         restitution: 0.1
     };
 
     def.sink = {
         width: 0.17,
         mass: 0,
-        depth: 18,
+        depth: 17,
     };
 
 
@@ -66,13 +67,13 @@ window.rcBowling.definitions = (function () {
     def.pin = {
         height: 0.38,
         mass: 1.5,
-        modelScale: 0.019,
-        friction: 1,
+        modelScale: 0.022,
+        friction: 0.2,
         restitution: 0.1,
-        position: {x: 0, y: 0.30, z: def.floor.track.depth - 0.9},
+        position: {x: 0, y: 0.20, z: def.floor.track.depth - 0.9},
         spacing: {x: 0.13, z: 0.20},
-        linearDamping: 0.5,
-        angularDamping: 0.5
+        linearDamping: 0.3,
+        angularDamping: 0.3
     };
 
 

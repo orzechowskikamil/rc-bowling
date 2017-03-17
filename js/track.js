@@ -13,11 +13,11 @@ window.rcBowling.track = (function () {
         woodMaterial = new BABYLON.StandardMaterial('wood-material', scene);
         woodMaterial.diffuseTexture = woodTexture;
 
-     //   var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
-    //    plasticTexture.uScale = 25;
-     //   plasticTexture.vScale = 1;
+        //   var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
+        //    plasticTexture.uScale = 25;
+        //   plasticTexture.vScale = 1;
         plasticMaterial = new BABYLON.StandardMaterial('plastic-material', scene);
-        plasticMaterial.diffuseColor=new BABYLON.Color3(0.2,0.2,0.2);
+        plasticMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
     }
 
 
@@ -52,7 +52,7 @@ window.rcBowling.track = (function () {
         });
     }
 
-    function addFloorToScene(name, width, depth, position, u, v, scene) {
+    function addFloorToScene(name, width, depth, position, u, v, physics,scene) {
         var trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
             width: width,
             height: def.floor.height,
@@ -60,26 +60,27 @@ window.rcBowling.track = (function () {
         }, scene);
         trackMesh.position = position;
         trackMesh.receiveShadows = true;
-        trackMesh.material = woodMaterial.clone('floor-' + name + '-material');  debugger
+        trackMesh.material = woodMaterial.clone('floor-' + name + '-material');
         trackMesh.material.diffuseTexture.uScale = u;
         trackMesh.material.diffuseTexture.vScale = v;
-        trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
-            mass: def.floor.mass,
-            friction: def.floor.friction,
-            restitution: def.floor.restitution
-        }, scene);
+        if(physics) {
+            trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: def.floor.mass,
+                friction: def.floor.friction,
+                restitution: def.floor.restitution
+            }, scene);
+        }
     }
 
     function addTrackToScene(scene) {
         loadMaterials(scene);
-
         [
             {name: 'track', def: def.floor.track},
             {name: 'front', def: def.floor.front},
             {name: 'left', def: def.floor.left},
             {name: 'right', def: def.floor.right}
         ].forEach(function (val, i, arr) {
-            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, scene);
+            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v,  val.def.physics,scene);
         });
 
 

@@ -31,16 +31,27 @@
 
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
-
+    var debug = false;
+    var timeStep = 1 / 60;
+    var physicsSolverIterations = 40;
+    var physicsSolverTolerance = 0.001;
 
     var def = window.rcBowling.definitions;
 
 
     function createScene() {
         var scene = new BABYLON.Scene(engine);
+        if (debug) {
+            scene.debugLayer.show();
+        }
         scene.enablePhysics(window.rcBowling.definitions.gravityVector, new BABYLON.CannonJSPlugin());
+        var physicsEngine = scene.getPhysicsEngine();
+        var physicsPlugin = physicsEngine._physicsPlugin;
+        var world = physicsPlugin.world;
+        physicsEngine.setTimeStep(1 / 60);
+        world.solver.iterations = physicsSolverIterations;
+        world.solver.tolerance = physicsSolverTolerance;
         scene.clearColor = new BABYLON.Color3(0, 0, 0);
-
         var assetsManager = new BABYLON.AssetsManager(scene);
 
 
@@ -69,8 +80,8 @@
         shadowGenerator.useBlurVarianceShadowMap = true;
 
 
-        var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, -2), scene);
-        camera.setTarget(new BABYLON.Vector3(0, 0.3, 2));
+        var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, 14), scene);
+        camera.setTarget(new BABYLON.Vector3(0, 0.3, 16));
         camera.attachControl(canvas, false);
 
 
@@ -89,7 +100,7 @@
         meshTask.onSuccess = function (result) {
             var bowlingBallMeshFromOBJ = result.loadedMeshes[1];
             var pinMeshFromOBJ = result.loadedMeshes[0];
-                           debugger
+            debugger
             bowlingBallMeshFromOBJ.dispose();
 
             var pinModelScaling = def.pin.modelScale * def.pin.height;
@@ -144,10 +155,6 @@
     }
 
     var scene = createScene();
-    var physicsEngine = scene.getPhysicsEngine();
-
-    physicsEngine.setTimeStep(1 / 60);
-
 
     window.addEventListener("resize", function () {
         engine.resize();
