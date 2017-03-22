@@ -24,6 +24,7 @@
     <script type="text/javascript" src="js/definitions.js"></script>
     <script type="text/javascript" src="js/track.js"></script>
     <script type="text/javascript" src="js/bowlingSet.js"></script>
+    <script type="text/javascript" src="js/lights.js"></script>
 </head>
 <body>
 <canvas id="babylon-canvas"></canvas>
@@ -55,38 +56,28 @@
         world.solver.tolerance = physicsSolverTolerance;
         scene.clearColor = backgroundColor;
 
-        window.rcBowling.track.addTrackToScene(scene);
         var bowlingSetLoaded = window.rcBowling.bowlingSet.addBowlingSetToScene(scene);
 
         Promise.all([bowlingSetLoaded]).then(function () {
+            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
 
-            var lightPosition = new BABYLON.Vector3(-2, 10, -4);
-            var lightDirection = new BABYLON.Vector3(0, -1, 0.5);
-            var lightGradient = 2;
-            var lightAngleRad = 1.6;
-            var light = new BABYLON.SpotLight("light", lightPosition, lightDirection, lightAngleRad, lightGradient, scene);
-            light.diffuse = new BABYLON.Color3(1, 1, 1);
-            light.specular = new BABYLON.Color3(1, 1, 1);
-
-
-            var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
-            var renderList = shadowGenerator.getShadowMap().renderList;
-            shadowGenerator.useBlurVarianceShadowMap = true;
+            window.rcBowling.track.addTrackToScene(scene);
+            window.rcBowling.lights.initLights(scene);
 
             var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, 14), scene);
             camera.setTarget(new BABYLON.Vector3(0, 0.3, 16));
             camera.attachControl(canvas, false);
 
-
-            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
-
-            renderList.push(bowlingBall);
+            window.rcBowling.lights.addToRenderShadowList(bowlingBall);
             window.rcBowling.bowlingSet.pins.forEach(function (pin) {
-                renderList.push(pin);
+                window.rcBowling.lights.addToRenderShadowList(pin);
             });
 
             setTimeout(function () {
-                var throwForceVector = new BABYLON.Vector3(Math.random() * def.throw.randomness - def.throw.randomness / 2, 5, def.throw.force);
+                var x = Math.random() * def.throw.randomness - def.throw.randomness / 2;
+                var y = 5;
+                var z = def.throw.force;
+                var throwForceVector = new BABYLON.Vector3(x, y, z);
                 bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
             }, 2000);
 
@@ -96,7 +87,6 @@
         });
 
         return scene;
-
     }
 
     var scene = createScene();
