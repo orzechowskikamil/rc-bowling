@@ -83,10 +83,8 @@ window.rcBowling.track = (function () {
             addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v,  val.def.physics,scene);
         });
 
-
         addSinkToScene('left-sink', def.sink.leftSinkPosition, scene);
         addSinkToScene('right-sink', def.sink.rightSinkPosition, scene);
-
     }
 
     return {

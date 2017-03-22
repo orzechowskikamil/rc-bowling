@@ -18,14 +18,15 @@
         }
     </style>
     <script src="babylon.min.js"></script>
+    <script type="text/javascript">
+        window.rcBowling = {};
+    </script>
+    <script type="text/javascript" src="js/definitions.js"></script>
+    <script type="text/javascript" src="js/track.js"></script>
+    <script type="text/javascript" src="js/bowlingSet.js"></script>
 </head>
 <body>
 <canvas id="babylon-canvas"></canvas>
-<script type="text/javascript">
-    window.rcBowling = {};
-</script>
-<script type="text/javascript" src="js/definitions.js"></script>
-<script type="text/javascript" src="js/track.js"></script>
 <script type="text/javascript">
 
 
@@ -35,6 +36,7 @@
     var timeStep = 1 / 60;
     var physicsSolverIterations = 40;
     var physicsSolverTolerance = 0.001;
+    var backgroundColor = new BABYLON.Color3(0, 0, 0);
 
     var def = window.rcBowling.definitions;
 
@@ -48,110 +50,53 @@
         var physicsEngine = scene.getPhysicsEngine();
         var physicsPlugin = physicsEngine._physicsPlugin;
         var world = physicsPlugin.world;
-        physicsEngine.setTimeStep(1 / 60);
+        physicsEngine.setTimeStep(timeStep);
         world.solver.iterations = physicsSolverIterations;
         world.solver.tolerance = physicsSolverTolerance;
-        scene.clearColor = new BABYLON.Color3(0, 0, 0);
-        var assetsManager = new BABYLON.AssetsManager(scene);
-
-
-        var lightPosition = new BABYLON.Vector3(-2, 10, -4);
-        var lightDirection = new BABYLON.Vector3(0, -1, 0.5);
-        var lightGradient = 2;
-        var lightAngleRad = 1.6;
-        var light = new BABYLON.SpotLight("light", lightPosition, lightDirection, lightAngleRad, lightGradient, scene);
-        light.diffuse = new BABYLON.Color3(1, 1, 1);
-        light.specular = new BABYLON.Color3(1, 1, 1);
+        scene.clearColor = backgroundColor;
 
         window.rcBowling.track.addTrackToScene(scene);
+        var bowlingSetLoaded = window.rcBowling.bowlingSet.addBowlingSetToScene(scene);
 
-        var ballMaterial = new BABYLON.StandardMaterial('ball-texture', scene);
-        ballMaterial.diffuseTexture = new BABYLON.Texture('assets/ball.png', scene);
+        Promise.all([bowlingSetLoaded]).then(function () {
 
-        var pinMaterial = new BABYLON.StandardMaterial('pin-texture', scene);
-        var pinTexture = new BABYLON.Texture('assets/pin.png', scene);
-        pinTexture.uScale = 1;
-        pinTexture.vScale = 1.9;
-        pinMaterial.diffuseTexture = pinTexture;
-
-
-        var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
-        var renderList = shadowGenerator.getShadowMap().renderList;
-        shadowGenerator.useBlurVarianceShadowMap = true;
+            var lightPosition = new BABYLON.Vector3(-2, 10, -4);
+            var lightDirection = new BABYLON.Vector3(0, -1, 0.5);
+            var lightGradient = 2;
+            var lightAngleRad = 1.6;
+            var light = new BABYLON.SpotLight("light", lightPosition, lightDirection, lightAngleRad, lightGradient, scene);
+            light.diffuse = new BABYLON.Color3(1, 1, 1);
+            light.specular = new BABYLON.Color3(1, 1, 1);
 
 
-        var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, 14), scene);
-        camera.setTarget(new BABYLON.Vector3(0, 0.3, 16));
-        camera.attachControl(canvas, false);
+            var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+            var renderList = shadowGenerator.getShadowMap().renderList;
+            shadowGenerator.useBlurVarianceShadowMap = true;
+
+            var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, 14), scene);
+            camera.setTarget(new BABYLON.Vector3(0, 0.3, 16));
+            camera.attachControl(canvas, false);
 
 
-        var bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, def.ball.diameter, scene);
-        bowlingBall.position = new BABYLON.Vector3(0, 1, 0);
-        bowlingBall.material = ballMaterial;
-        bowlingBall.impostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
-            mass: def.ball.mass,
-            friction: def.ball.friction,
-            restitution: def.ball.restitution
-        }, scene);
+            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
 
-        renderList.push(bowlingBall);
-
-        var meshTask = assetsManager.addMeshTask('bowling task', '', "assets/", "bs.obj");
-        meshTask.onSuccess = function (result) {
-            var bowlingBallMeshFromOBJ = result.loadedMeshes[1];
-            var pinMeshFromOBJ = result.loadedMeshes[0];
-            debugger
-            bowlingBallMeshFromOBJ.dispose();
-
-            var pinModelScaling = def.pin.modelScale * def.pin.height;
-            pinMeshFromOBJ.scaling = new BABYLON.Vector3(pinModelScaling, pinModelScaling, pinModelScaling);
-            pinMeshFromOBJ.material = pinMaterial;
-
-            var pinPositions = [
-                {x: 0, z: 0},
-                {x: -1 * def.pin.spacing.x, z: def.pin.spacing.z},
-                {x: def.pin.spacing.x, z: def.pin.spacing.z},
-                {x: -2 * def.pin.spacing.x, z: 2 * def.pin.spacing.z},
-                {x: 0, z: 2 * def.pin.spacing.z},
-                {x: 2 * def.pin.spacing.x, z: 2 * def.pin.spacing.z},
-                {x: -1 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                {x: def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                {x: 3 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                {x: -3 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-            ];
-
-            pinPositions.forEach(function (val, i) {
-                var pinMesh = pinMeshFromOBJ.clone('pin-' + i);
-                pinMesh.position = new BABYLON.Vector3(val.x + def.pin.position.x, def.pin.position.y, val.z + def.pin.position.z);
-                pinMesh.impostor = new BABYLON.PhysicsImpostor(pinMesh, BABYLON.PhysicsImpostor.CylinderImpostor, {
-                    mass: def.pin.mass,
-                    friction: def.pin.friction,
-                    restitution: def.pin.restitution,
-                    nativeOptions: {
-                        linearDamping: def.pin.linearDamping,
-                        angularDamping: def.pin.angularDamping
-                    }
-                }, scene);
-                renderList.push(pinMesh);
+            renderList.push(bowlingBall);
+            window.rcBowling.bowlingSet.pins.forEach(function (pin) {
+                renderList.push(pin);
             });
 
-            pinMeshFromOBJ.dispose();
-        };
+            setTimeout(function () {
+                var throwForceVector = new BABYLON.Vector3(Math.random() * def.throw.randomness - def.throw.randomness / 2, 5, def.throw.force);
+                bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
+            }, 2000);
 
-        setTimeout(function () {
-            var throwForceVector = new BABYLON.Vector3(Math.random() * def.throw.randomness - def.throw.randomness / 2, 5, def.throw.force);
-            bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
-        }, 2000);
-
-        assetsManager.onFinish = function () {
             engine.runRenderLoop(function () {
                 scene.render();
             });
-        };
-
-        assetsManager.load();
+        });
 
         return scene;
+
     }
 
     var scene = createScene();
