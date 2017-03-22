@@ -20,6 +20,13 @@
     <script src="babylon.min.js"></script>
     <script type="text/javascript">
         window.rcBowling = {};
+        /**
+         * quick util to log value without extracting it to variable
+         */
+        function loog(v) {
+            console.debug(v);
+            return v;
+        }
     </script>
     <script type="text/javascript" src="js/definitions.js"></script>
     <script type="text/javascript" src="js/track.js"></script>
@@ -40,6 +47,7 @@
     var backgroundColor = new BABYLON.Color3(0, 0, 0);
 
     var def = window.rcBowling.definitions;
+    var ballDuringThrow = false;
 
 
     function createScene() {
@@ -64,8 +72,8 @@
             window.rcBowling.track.addTrackToScene(scene);
             window.rcBowling.lights.initLights(scene);
 
-            var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.5, 14), scene);
-            camera.setTarget(new BABYLON.Vector3(0, 0.3, 16));
+            var camera = new BABYLON.TargetCamera("camera", new BABYLON.Vector3(0, 1.5, -3), scene);
+            camera.setTarget(new BABYLON.Vector3(0, 0.9, 2));
             camera.attachControl(canvas, false);
 
             window.rcBowling.lights.addToRenderShadowList(bowlingBall);
@@ -73,13 +81,52 @@
                 window.rcBowling.lights.addToRenderShadowList(pin);
             });
 
-            setTimeout(function () {
-                var x = Math.random() * def.throw.randomness - def.throw.randomness / 2;
-                var y = 5;
-                var z = def.throw.force;
-                var throwForceVector = new BABYLON.Vector3(x, y, z);
-                bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
-            }, 2000);
+
+            window.rcBowling.bowlingSet.floatBall();
+
+            canvas.addEventListener('mousemove', function (e) {
+                if (ballDuringThrow) {
+                    return;
+                }
+                var xPercent = e.screenX / window.screen.width;
+
+                window.rcBowling.bowlingSet.bowlingBall.position = new BABYLON.Vector3(
+                        xPercent * def.floor.track.width - def.floor.track.width / 2,
+                        def.ball.initialPosition.y,
+                        def.ball.initialPosition.z
+                );
+            })    ;
+
+            canvas.addEventListener('mousedown', function (e) {
+                if (ballDuringThrow) {
+                    return;
+                }
+                ballDuringThrow = true;
+
+                var initialEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
+
+                var onMouseUp = function (e) {
+                    canvas.removeEventListener('mouseup', onMouseUp, true);
+
+                    var finalEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
+
+                    var movement = {
+                        x: finalEvent.x - initialEvent.x,
+                        y: finalEvent.y - initialEvent.y,
+                        duration: finalEvent.timestamp - initialEvent.timestamp
+                    };
+
+                    var forceAdjustment = {x: 2, y: -0.05, z: 25};
+
+                    var throwForceVector = new BABYLON.Vector3(
+                            movement.x * forceAdjustment.x / movement.duration,
+                            movement.y * forceAdjustment.y,
+                            Math.abs(movement.y) * forceAdjustment.z / movement.duration
+                    );
+                    window.rcBowling.bowlingSet.throwBall(throwForceVector);
+                };
+                canvas.addEventListener('mouseup', onMouseUp, true);
+            });
 
             engine.runRenderLoop(function () {
                 scene.render();

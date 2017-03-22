@@ -17,7 +17,8 @@ window.rcBowling.definitions = (function () {
         minDiameter: 0.16,
         diameter: 0.21,
         friction: 0.2,
-        restitution: 0.1
+        restitution: 0.1,
+        initialPosition: new BABYLON.Vector3(0, 0.5, 0)
     };
 
     def.floor = {
@@ -26,7 +27,7 @@ window.rcBowling.definitions = (function () {
             depth: 18,
             u: 5,
             v: 1,
-            physics:true
+            physics: true
         },
         left: {
             width: 5,
@@ -60,8 +61,16 @@ window.rcBowling.definitions = (function () {
 
 
     def.floor.track.position = new BABYLON.Vector3(0, 0, def.floor.track.depth / 2);
-    def.floor.left.position = new BABYLON.Vector3(def.floor.track.width / -2 + def.sink.width * -1 + def.floor.left.width / -2, 0, def.floor.left.depth / 2);
-    def.floor.right.position = new BABYLON.Vector3(def.floor.track.width / 2 + def.sink.width + def.floor.left.width / 2, 0, def.floor.left.depth / 2);
+    def.floor.left.position = new BABYLON.Vector3(
+        def.floor.track.width / -2 + def.sink.width * -1 + def.floor.left.width / -2,
+        0,
+        def.floor.left.depth / 2
+    );
+    def.floor.right.position = new BABYLON.Vector3(
+        def.floor.track.width / 2 + def.sink.width + def.floor.left.width / 2,
+        0,
+        def.floor.left.depth / 2
+    );
     def.floor.front.position = new BABYLON.Vector3(0, 0, def.floor.front.depth / -2);
 
     def.pin = {

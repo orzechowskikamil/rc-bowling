@@ -19,7 +19,7 @@ window.rcBowling.bowlingSet = (function () {
 
     function addBowlingBallToScene(scene) {
         bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, def.ball.diameter, scene);
-        bowlingBall.position = new BABYLON.Vector3(0, 1, 0);
+        bowlingBall.position = def.ball.initialPosition;
         bowlingBall.material = ballMaterial;
         bowlingBall.impostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
             mass: def.ball.mass,
@@ -84,6 +84,20 @@ window.rcBowling.bowlingSet = (function () {
         });
     }
 
+    function throwBall(throwForceVector) {
+        bowlingBall.impostor.setMass(def.ball.mass);
+        // seems very stupid, but applying a force don't work just after changing mass.
+        // It's required to do small timeout.
+        setTimeout(function () {
+            bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
+        }, 1);
+    }
+
+    function floatBall() {
+        bowlingBall.impostor.setMass(0);
+        bowlingBall.position = def.ball.initialPosition;
+    }
+
     /**
      * @param scene
      * @returns Promise
@@ -101,6 +115,8 @@ window.rcBowling.bowlingSet = (function () {
         get pins() {
             return pins;
         },
-        addBowlingSetToScene: addBowlingSetToScene
+        addBowlingSetToScene: addBowlingSetToScene,
+        throwBall: throwBall,
+        floatBall: floatBall
     }
 }());

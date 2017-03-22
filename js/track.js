@@ -12,10 +12,6 @@ window.rcBowling.track = (function () {
         woodTexture.vScale = 1;
         woodMaterial = new BABYLON.StandardMaterial('wood-material', scene);
         woodMaterial.diffuseTexture = woodTexture;
-
-        //   var plasticTexture = new BABYLON.Texture('assets/plastic.jpg', scene);
-        //    plasticTexture.uScale = 25;
-        //   plasticTexture.vScale = 1;
         plasticMaterial = new BABYLON.StandardMaterial('plastic-material', scene);
         plasticMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
     }
