@@ -32,6 +32,7 @@
     <script type="text/javascript" src="js/track.js"></script>
     <script type="text/javascript" src="js/bowlingSet.js"></script>
     <script type="text/javascript" src="js/lights.js"></script>
+    <script type="text/javascript" src="js/game.js"></script>
 </head>
 <body>
 <canvas id="babylon-canvas"></canvas>
@@ -81,52 +82,9 @@
                 window.rcBowling.lights.addToRenderShadowList(pin);
             });
 
-
             window.rcBowling.bowlingSet.floatBall();
 
-            canvas.addEventListener('mousemove', function (e) {
-                if (ballDuringThrow) {
-                    return;
-                }
-                var xPercent = e.screenX / window.screen.width;
-
-                window.rcBowling.bowlingSet.bowlingBall.position = new BABYLON.Vector3(
-                        xPercent * def.floor.track.width - def.floor.track.width / 2,
-                        def.ball.initialPosition.y,
-                        def.ball.initialPosition.z
-                );
-            })    ;
-
-            canvas.addEventListener('mousedown', function (e) {
-                if (ballDuringThrow) {
-                    return;
-                }
-                ballDuringThrow = true;
-
-                var initialEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
-
-                var onMouseUp = function (e) {
-                    canvas.removeEventListener('mouseup', onMouseUp, true);
-
-                    var finalEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
-
-                    var movement = {
-                        x: finalEvent.x - initialEvent.x,
-                        y: finalEvent.y - initialEvent.y,
-                        duration: finalEvent.timestamp - initialEvent.timestamp
-                    };
-
-                    var forceAdjustment = {x: 2, y: -0.05, z: 25};
-
-                    var throwForceVector = new BABYLON.Vector3(
-                            movement.x * forceAdjustment.x / movement.duration,
-                            movement.y * forceAdjustment.y,
-                            Math.abs(movement.y) * forceAdjustment.z / movement.duration
-                    );
-                    window.rcBowling.bowlingSet.throwBall(throwForceVector);
-                };
-                canvas.addEventListener('mouseup', onMouseUp, true);
-            });
+            window.rcBowling.game.listenToMouseEvents();
 
             engine.runRenderLoop(function () {
                 scene.render();
