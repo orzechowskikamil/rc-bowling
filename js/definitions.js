@@ -2,12 +2,14 @@ window.rcBowling.definitions = (function () {
 
     var def = {};
 
-    def.gravityVector = new BABYLON.Vector3(0, -9.81, 0);
-
-    def.throw = {
-        force: 50,
-        randomness: 4
+    def.physics = {
+        gravityVector: new BABYLON.Vector3(0, -9.81, 0),
+        desiredFps: 60,
+        solverIterations: 40,
+        solverTolerance: 0.001,
+        throwForceAdjustment: {x: 10, y: -0.05, z: 15}
     };
+    def.physics.timeStep = 1 / def.physics.desiredFps;
 
     def.ball = {
         maxMass: 7.26,
@@ -18,7 +20,8 @@ window.rcBowling.definitions = (function () {
         diameter: 0.21,
         friction: 0.2,
         restitution: 0.1,
-        initialPosition: new BABYLON.Vector3(0, 0.5, 0)
+        initialPosition: new BABYLON.Vector3(0, 0.5, 0),
+        segments: 10
     };
 
     def.floor = {
@@ -79,10 +82,22 @@ window.rcBowling.definitions = (function () {
         modelScale: 0.022,
         friction: 0.2,
         restitution: 0.1,
-        position: {x: 0, y: 0.20, z: def.floor.track.depth - 0.9},
+        pinSetPosition: {x: 0, y: 0.4, z: def.floor.track.depth - 0.9},
         spacing: {x: 0.13, z: 0.20},
         linearDamping: 0.3,
-        angularDamping: 0.3
+        angularDamping: 0.3,
+        pinsInitialLayout: [
+            {x: 0, z: 0},
+            {x: -1, z: 1},
+            {x: 1, z: 1},
+            {x: -2, z: 2},
+            {x: 0, z: 2},
+            {x: 2, z: 2},
+            {x: -1, z: 3},
+            {x: 1, z: 3},
+            {x: 3, z: 3},
+            {x: -3, z: 3}
+        ]
     };
 
 

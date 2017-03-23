@@ -1,9 +1,11 @@
 window.rcBowling.bowlingSet = (function () {
+    var def = window.rcBowling.definitions;
 
     var ballMaterial;
     var pinMaterial;
     var bowlingBall;
     var pins;
+    var ballDuringThrow = false;
 
     function loadMaterials(scene) {
         ballMaterial = new BABYLON.StandardMaterial('ball-texture', scene);
@@ -18,14 +20,34 @@ window.rcBowling.bowlingSet = (function () {
 
 
     function addBowlingBallToScene(scene) {
-        bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', 100, def.ball.diameter, scene);
-        bowlingBall.position = def.ball.initialPosition;
+        bowlingBall = BABYLON.Mesh.CreateSphere('bowling-ball', def.ball.segments, def.ball.diameter, scene);
         bowlingBall.material = ballMaterial;
         bowlingBall.impostor = new BABYLON.PhysicsImpostor(bowlingBall, BABYLON.PhysicsImpostor.SphereImpostor, {
-            mass: def.ball.mass,
             friction: def.ball.friction,
-            restitution: def.ball.restitution
+            restitution: def.ball.restitution,
+            mass: def.ball.mass
         }, scene);
+
+        // hide ball initially to avoid problems
+        var invisiblePositionVector = new BABYLON.Vector3(100, -100, -100);
+        bowlingBall.position = invisiblePositionVector;
+    }
+
+    function placePins() {
+        pins.forEach(function (pinMesh, i) {
+            var pinPositionInLayout = def.pin.pinsInitialLayout[i];
+
+            pinMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+            pinMesh.impostor.setAngularVelocity(new BABYLON.Vector3(0, 0, 0));
+            pinMesh.impostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
+            setTimeout(function () {
+                pinMesh.position = new BABYLON.Vector3(
+                    pinPositionInLayout.x * def.pin.spacing.x + def.pin.pinSetPosition.x,
+                    def.pin.pinSetPosition.y,
+                    pinPositionInLayout.z * def.pin.spacing.z + def.pin.pinSetPosition.z
+                );
+            }, 1);
+        });
     }
 
     function addPinsToScene(scene) {
@@ -47,24 +69,15 @@ window.rcBowling.bowlingSet = (function () {
                 pinMeshFromOBJ.scaling = new BABYLON.Vector3(pinModelScaling, pinModelScaling, pinModelScaling);
                 pinMeshFromOBJ.material = pinMaterial;
 
-                var pinPositions = [
-                    {x: 0, z: 0},
-                    {x: -1 * def.pin.spacing.x, z: def.pin.spacing.z},
-                    {x: def.pin.spacing.x, z: def.pin.spacing.z},
-                    {x: -2 * def.pin.spacing.x, z: 2 * def.pin.spacing.z},
-                    {x: 0, z: 2 * def.pin.spacing.z},
-                    {x: 2 * def.pin.spacing.x, z: 2 * def.pin.spacing.z},
-                    {x: -1 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                    {x: def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                    {x: 3 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                    {x: -3 * def.pin.spacing.x, z: 3 * def.pin.spacing.z},
-                ];
-
                 pins = [];
 
-                pinPositions.forEach(function (val, i) {
+                for (var i = 0, max = def.pin.pinsInitialLayout.length; i < max; i++) {
                     var pinMesh = pinMeshFromOBJ.clone('pin-' + i);
-                    pinMesh.position = new BABYLON.Vector3(val.x + def.pin.position.x, def.pin.position.y, val.z + def.pin.position.z);
+                    pinMesh.numberInLayout = i;
+
+                    var invisiblePosition = new BABYLON.Vector3(-100 * i, -100, -100);
+                    pinMesh.position = invisiblePosition;
+
                     pinMesh.impostor = new BABYLON.PhysicsImpostor(pinMesh, BABYLON.PhysicsImpostor.CylinderImpostor, {
                         mass: def.pin.mass,
                         friction: def.pin.friction,
@@ -75,9 +88,8 @@ window.rcBowling.bowlingSet = (function () {
                         }
                     }, scene);
                     pins.push(pinMesh);
-                });
+                }
                 pinMeshFromOBJ.dispose();
-
                 resolve();
             }
             assetsManager.load();
@@ -85,6 +97,11 @@ window.rcBowling.bowlingSet = (function () {
     }
 
     function throwBall(throwForceVector) {
+        if (ballDuringThrow) {
+            throw new Error('ball was already thrown. reset position of everything before another shot');
+        }
+        ballDuringThrow = true;
+        // now ball require real mass
         bowlingBall.impostor.setMass(def.ball.mass);
         // seems very stupid, but applying a force don't work just after changing mass.
         // It's required to do small timeout.
@@ -93,10 +110,29 @@ window.rcBowling.bowlingSet = (function () {
         }, 1);
     }
 
-    function floatBall() {
+    function placeBall() {
+        ballDuringThrow = false;
+        // ball must have 0 mass to float above floor
         bowlingBall.impostor.setMass(0);
-        bowlingBall.position = def.ball.initialPosition;
+        bowlingBall.position = def.ball.initialPosition.clone();
+
+        bowlingBall.impostor.setAngularVelocity(new BABYLON.Vector3(0, 0, 0));
+        bowlingBall.impostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
     }
+
+    function getAmountOfHitPins() {
+        return 3;
+    }
+
+    function isBowlingBallOutsideTrack() {
+        return false;
+    }
+
+    function setUpPinsAndBall() {
+        placeBall();
+        placePins();
+    }
+
 
     /**
      * @param scene
@@ -115,8 +151,13 @@ window.rcBowling.bowlingSet = (function () {
         get pins() {
             return pins;
         },
+        get ballDuringThrow() {
+            return ballDuringThrow;
+        },
         addBowlingSetToScene: addBowlingSetToScene,
         throwBall: throwBall,
-        floatBall: floatBall
+        getAmountOfHitPins: getAmountOfHitPins,
+        isBowlingBallOutsideTrack: isBowlingBallOutsideTrack,
+        setUpPinsAndBall: setUpPinsAndBall
     }
 }());

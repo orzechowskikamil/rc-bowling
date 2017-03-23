@@ -42,13 +42,10 @@
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
     var debug = false;
-    var timeStep = 1 / 60;
-    var physicsSolverIterations = 40;
-    var physicsSolverTolerance = 0.001;
+
     var backgroundColor = new BABYLON.Color3(0, 0, 0);
 
     var def = window.rcBowling.definitions;
-    var ballDuringThrow = false;
 
 
     function createScene() {
@@ -56,13 +53,13 @@
         if (debug) {
             scene.debugLayer.show();
         }
-        scene.enablePhysics(window.rcBowling.definitions.gravityVector, new BABYLON.CannonJSPlugin());
+        scene.enablePhysics(def.physics.gravityVector, new BABYLON.CannonJSPlugin());
         var physicsEngine = scene.getPhysicsEngine();
         var physicsPlugin = physicsEngine._physicsPlugin;
         var world = physicsPlugin.world;
-        physicsEngine.setTimeStep(timeStep);
-        world.solver.iterations = physicsSolverIterations;
-        world.solver.tolerance = physicsSolverTolerance;
+        physicsEngine.setTimeStep(def.physics.timeStep);
+        world.solver.iterations = def.physics.solverIterations;
+        world.solver.tolerance = def.physics.solverTolerance;
         scene.clearColor = backgroundColor;
 
         var bowlingSetLoaded = window.rcBowling.bowlingSet.addBowlingSetToScene(scene);
@@ -82,9 +79,14 @@
                 window.rcBowling.lights.addToRenderShadowList(pin);
             });
 
-            window.rcBowling.bowlingSet.floatBall();
-
-            window.rcBowling.game.listenToMouseEvents();
+            var loop = function () {
+                setTimeout(function () {
+                    window.rcBowling.game.setUpShot();
+                    loop();
+                }, 15000);
+            };
+            window.rcBowling.game.startGame();
+            loop();
 
             engine.runRenderLoop(function () {
                 scene.render();

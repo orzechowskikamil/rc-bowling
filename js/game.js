@@ -1,8 +1,14 @@
 window.rcBowling.game = (function () {
 
+    var def = window.rcBowling.definitions;
+
+    function collectThrowStatus() {
+
+    }
+
     function listenToMouseEvents() {
         document.body.addEventListener('mousemove', function (e) {
-            if (ballDuringThrow) {
+            if (window.rcBowling.bowlingSet.ballDuringThrow) {
                 return;
             }
             var xPercent = e.screenX / window.screen.width;
@@ -15,10 +21,9 @@ window.rcBowling.game = (function () {
         });
 
         document.body.addEventListener('mousedown', function (e) {
-            if (ballDuringThrow) {
+            if (window.rcBowling.bowlingSet.ballDuringThrow) {
                 return;
             }
-            ballDuringThrow = true;
 
             var initialEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
 
@@ -33,7 +38,7 @@ window.rcBowling.game = (function () {
                     duration: finalEvent.timestamp - initialEvent.timestamp
                 };
 
-                var forceAdjustment = {x: 2, y: -0.05, z: 25};
+                var forceAdjustment = def.physics.throwForceAdjustment;
 
                 var throwForceVector = new BABYLON.Vector3(
                     movement.x * forceAdjustment.x / movement.duration,
@@ -46,7 +51,19 @@ window.rcBowling.game = (function () {
         });
     }
 
+    function startGame() {
+        listenToMouseEvents();
+        collectThrowStatus();
+        setUpShot();
+    }
+
+    function setUpShot() {
+        window.rcBowling.bowlingSet.setUpPinsAndBall();
+    }
+
+
     return {
-        listenToMouseEvents: listenToMouseEvents
+        startGame: startGame,
+        setUpShot: setUpShot
     };
 }());

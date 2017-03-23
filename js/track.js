@@ -48,7 +48,7 @@ window.rcBowling.track = (function () {
         });
     }
 
-    function addFloorToScene(name, width, depth, position, u, v, physics,scene) {
+    function addFloorToScene(name, width, depth, position, u, v, physics, scene) {
         var trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
             width: width,
             height: def.floor.height,
@@ -59,7 +59,7 @@ window.rcBowling.track = (function () {
         trackMesh.material = woodMaterial.clone('floor-' + name + '-material');
         trackMesh.material.diffuseTexture.uScale = u;
         trackMesh.material.diffuseTexture.vScale = v;
-        if(physics) {
+        if (physics) {
             trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: def.floor.mass,
                 friction: def.floor.friction,
@@ -76,7 +76,7 @@ window.rcBowling.track = (function () {
             {name: 'left', def: def.floor.left},
             {name: 'right', def: def.floor.right}
         ].forEach(function (val, i, arr) {
-            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v,  val.def.physics,scene);
+            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, val.def.physics, scene);
         });
 
         addSinkToScene('left-sink', def.sink.leftSinkPosition, scene);
