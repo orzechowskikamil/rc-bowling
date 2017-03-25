@@ -120,13 +120,33 @@ window.rcBowling.bowlingSet = (function () {
         bowlingBall.impostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
     }
 
-    function getAmountOfHitPins() {
-        return 3;
+    function getAmountOfKnockedPins() {
+        return pins.reduce(function (total, val, i, arr) {
+            var yR = val.rotationQuaternion.toEulerAngles().y;
+            var y = val.position.y;
+            var pinKnockedOut = yR > 0.3 || yR < -0.3;
+            var pinFallUnderTrack = y < def.floor.track.position.y - 1;
+
+            return total + (pinKnockedOut || pinFallUnderTrack ? 1 : 0);
+        }, 0);
     }
 
-    function isBowlingBallOutsideTrack() {
-        return false;
+    function isBallThrowFinished() {
+        if (!ballDuringThrow) {return false;}
+
+        var pos = bowlingBall.position;
+        var v = bowlingBall.impostor.getLinearVelocity();
+
+        var ballOutsideTrack = pos.z > def.floor.track.depth
+            || pos.x > def.floor.track.width
+            || pos.x < def.floor.track.width * -1
+            || pos.y < def.floor.track.position.y - 1;
+
+        var ballStopped = v.x < 0.01 && v.y < 0.01 && v.z < 0.01;
+
+        return ballOutsideTrack || ballStopped;
     }
+
 
     function setUpPinsAndBall() {
         placeBall();
@@ -156,8 +176,8 @@ window.rcBowling.bowlingSet = (function () {
         },
         addBowlingSetToScene: addBowlingSetToScene,
         throwBall: throwBall,
-        getAmountOfHitPins: getAmountOfHitPins,
-        isBowlingBallOutsideTrack: isBowlingBallOutsideTrack,
-        setUpPinsAndBall: setUpPinsAndBall
+        getAmountOfKnockedPins: getAmountOfKnockedPins,
+        setUpPinsAndBall: setUpPinsAndBall,
+        isBallThrowFinished: isBallThrowFinished
     }
 }());

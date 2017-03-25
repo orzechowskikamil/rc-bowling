@@ -41,7 +41,6 @@
 
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
-    var debug = false;
 
     var backgroundColor = new BABYLON.Color3(0, 0, 0);
 
@@ -50,7 +49,7 @@
 
     function createScene() {
         var scene = new BABYLON.Scene(engine);
-        if (debug) {
+        if (def.debug) {
             scene.debugLayer.show();
         }
         scene.enablePhysics(def.physics.gravityVector, new BABYLON.CannonJSPlugin());
@@ -79,14 +78,7 @@
                 window.rcBowling.lights.addToRenderShadowList(pin);
             });
 
-            var loop = function () {
-                setTimeout(function () {
-                    window.rcBowling.game.setUpShot();
-                    loop();
-                }, 15000);
-            };
             window.rcBowling.game.startGame();
-            loop();
 
             engine.runRenderLoop(function () {
                 scene.render();

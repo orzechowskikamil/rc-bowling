@@ -59,6 +59,20 @@ window.rcBowling.game = (function () {
 
     function setUpShot() {
         window.rcBowling.bowlingSet.setUpPinsAndBall();
+
+        var watchTrackIntervalID = setInterval(function () {
+            if (!window.rcBowling.bowlingSet.isBallThrowFinished()) {
+                return;
+            }
+
+            clearInterval(watchTrackIntervalID);
+
+            setTimeout(function(){
+                var knockedPins = window.rcBowling.bowlingSet.getAmountOfKnockedPins();
+                alert('you knocked ' + knockedPins + ' pins!');
+                setUpShot();
+            }, 5*1000);
+        }, 1000);
     }
 
 

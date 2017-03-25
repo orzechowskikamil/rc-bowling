@@ -2,12 +2,14 @@ window.rcBowling.definitions = (function () {
 
     var def = {};
 
+    def.debug = false;
+
     def.physics = {
         gravityVector: new BABYLON.Vector3(0, -9.81, 0),
         desiredFps: 60,
         solverIterations: 40,
         solverTolerance: 0.001,
-        throwForceAdjustment: {x: 10, y: -0.05, z: 15}
+        throwForceAdjustment: {x: 10, y: -0.05, z: 150}
     };
     def.physics.timeStep = 1 / def.physics.desiredFps;
 
