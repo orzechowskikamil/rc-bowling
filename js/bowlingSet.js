@@ -153,6 +153,15 @@ window.rcBowling.bowlingSet = (function () {
         placePins();
     }
 
+    function isBallCrossedMiddleOfTrack() {
+        if (!ballDuringThrow) {
+            return false;
+        }
+
+        var middleOfTrackZ = def.floor.track.depth / 2;
+
+        return bowlingBall.position.z > middleOfTrackZ;
+    }
 
     /**
      * @param scene
@@ -178,6 +187,8 @@ window.rcBowling.bowlingSet = (function () {
         throwBall: throwBall,
         getAmountOfKnockedPins: getAmountOfKnockedPins,
         setUpPinsAndBall: setUpPinsAndBall,
-        isBallThrowFinished: isBallThrowFinished
+        isBallThrowFinished: isBallThrowFinished,
+        isBallCrossedMiddleOfTrack:isBallCrossedMiddleOfTrack
+
     }
 }());

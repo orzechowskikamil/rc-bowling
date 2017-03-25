@@ -2,9 +2,6 @@ window.rcBowling.game = (function () {
 
     var def = window.rcBowling.definitions;
 
-    function collectThrowStatus() {
-
-    }
 
     function listenToMouseEvents() {
         document.body.addEventListener('mousemove', function (e) {
@@ -45,15 +42,30 @@ window.rcBowling.game = (function () {
                     movement.y * forceAdjustment.y,
                     Math.abs(movement.y) * forceAdjustment.z / movement.duration
                 );
-                window.rcBowling.bowlingSet.throwBall(throwForceVector);
+                throwBall(throwForceVector);
             };
             document.body.addEventListener('mouseup', onMouseUp, true);
         });
     }
 
+    function waitForBallInMiddlewayAndMoveCameraToPins() {
+        var id = setInterval(function () {
+            if (!window.rcBowling.bowlingSet.isBallCrossedMiddleOfTrack()) {
+                return;
+            }
+            clearInterval(id);
+            window.rcBowling.camera.moveToPins();
+        }, 1);
+    }
+
+    function throwBall(throwForceVector) {
+        window.rcBowling.bowlingSet.throwBall(throwForceVector);
+        waitForBallInMiddlewayAndMoveCameraToPins();
+
+    }
+
     function startGame() {
         listenToMouseEvents();
-        collectThrowStatus();
         setUpShot();
     }
 
@@ -67,11 +79,12 @@ window.rcBowling.game = (function () {
 
             clearInterval(watchTrackIntervalID);
 
-            setTimeout(function(){
+            setTimeout(function () {
                 var knockedPins = window.rcBowling.bowlingSet.getAmountOfKnockedPins();
                 alert('you knocked ' + knockedPins + ' pins!');
+                window.rcBowling.camera.moveToBeginning();
                 setUpShot();
-            }, 5*1000);
+            }, 5 * 1000);
         }, 1000);
     }
 

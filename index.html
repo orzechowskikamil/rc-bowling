@@ -33,6 +33,7 @@
     <script type="text/javascript" src="js/bowlingSet.js"></script>
     <script type="text/javascript" src="js/lights.js"></script>
     <script type="text/javascript" src="js/game.js"></script>
+    <script type="text/javascript" src="js/camera.js"></script>
 </head>
 <body>
 <canvas id="babylon-canvas"></canvas>
@@ -68,10 +69,7 @@
 
             window.rcBowling.track.addTrackToScene(scene);
             window.rcBowling.lights.initLights(scene);
-
-            var camera = new BABYLON.TargetCamera("camera", new BABYLON.Vector3(0, 1.5, -3), scene);
-            camera.setTarget(new BABYLON.Vector3(0, 0.9, 2));
-            camera.attachControl(canvas, false);
+            window.rcBowling.camera.initCamera(scene);
 
             window.rcBowling.lights.addToRenderShadowList(bowlingBall);
             window.rcBowling.bowlingSet.pins.forEach(function (pin) {
