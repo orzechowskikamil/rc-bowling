@@ -1,7 +1,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Babylon - Basic scene</title>
+    <title>Remote controlled bowling</title>
+
     <style>
         html, body {
             overflow: hidden;
@@ -17,7 +18,12 @@
             touch-action: none;
         }
     </style>
-    <script src="babylon.min.js"></script>
+
+    <!--Minified file is used runtime, while non minified file is kept in project for autocompletion purposes-->
+    <script src="lib/babylon.js/babylon.min.js"></script>
+    <script src="lib/peer.js/peer.min.js"></script>
+
+
     <script type="text/javascript">
         window.rcBowling = {};
         /**
@@ -28,25 +34,24 @@
             return v;
         }
     </script>
-    <script type="text/javascript" src="js/definitions.js"></script>
-    <script type="text/javascript" src="js/track.js"></script>
-    <script type="text/javascript" src="js/bowlingSet.js"></script>
-    <script type="text/javascript" src="js/lights.js"></script>
-    <script type="text/javascript" src="js/game.js"></script>
-    <script type="text/javascript" src="js/camera.js"></script>
+
+    <script src="js/definitions.js"></script>
+    <script src="js/track.js"></script>
+    <script src="js/bowlingSet.js"></script>
+    <script src="js/lights.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/connection.js"></script>
+
 </head>
 <body>
 <canvas id="babylon-canvas"></canvas>
 <script type="text/javascript">
 
-
     var canvas = document.querySelector("#babylon-canvas");
     var engine = new BABYLON.Engine(canvas, true);
-
     var backgroundColor = new BABYLON.Color3(0, 0, 0);
-
     var def = window.rcBowling.definitions;
-
 
     function createScene() {
         var scene = new BABYLON.Scene(engine);
@@ -90,6 +95,14 @@
 
     window.addEventListener("resize", function () {
         engine.resize();
+    });
+
+    window.rcBowling.connection.getPeerId().then(function (peerId) {
+        window.open('controller.html?gameid=' + peerId, '_blank');
+
+        window.rcBowling.connection.listen(function (data) {
+            console.debug('received smth! ', data);
+        });
     });
 </script>
 </body>

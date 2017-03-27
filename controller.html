@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote controlled bowling - Controller</title>
+
+    <script>
+        window.rcBowling = {};
+    </script>
+
+    <script src="lib/peer.js/peer.min.js"></script>
+    <script src="js/connection.js"></script>
+
+    <script>
+        var gamePeerId = window.location.search.split('=')[1];
+
+        window.rcBowling.connection.getPeerId().then(function () {
+            return window.rcBowling.connection.connectToPeer(gamePeerId);
+        }).then(function () {
+            var data = 'from controller to game!';
+            window.rcBowling.connection.send({'data': data});
+        });
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
