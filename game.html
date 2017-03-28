@@ -116,8 +116,9 @@
                     window.document.body.setAttribute('data-current-screen', 'pairing');
 
                     window.rcBowling.connection.listen(function (data) {
-                        console.debug('received smth! ', data);
-                        resolve();
+                        if (data.connectedToGame === true) {
+                            resolve();
+                        }
                     });
                 });
             });
@@ -133,6 +134,10 @@
             var canvasDom = document.getElementById('babylon-canvas');
             window.document.body.setAttribute('data-current-screen', 'game');
             window.rcBowling.scene.createScene(canvasDom);
+
+            window.rcBowling.connection.listen(function (data) {
+                console.debug(data);
+            });
         });
 
     </script>

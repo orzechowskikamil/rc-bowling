@@ -53,6 +53,22 @@
         }).then(function () {
             window.rcBowling.connection.send({connectedToGame: true});
             document.body.setAttribute('data-current-screen', 'connected-to-game');
+
+            window.addEventListener('devicemotion', function (e) {
+                window.rcBowling.connection.send({
+                    acceleration: {
+                        x: e.acceleration.x,
+                        y: e.acceleration.y,
+                        z: e.acceleration.z
+                    },
+                    rotation: {
+                        alpha: e.rotationRate.alpha,
+                        beta: e.rotationRate.beta,
+                        gamma: e.rotationRate.gamma
+                    }
+                });
+            });
+
         });
 
     </script>
