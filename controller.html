@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <title>Remote controlled bowling - Controller</title>
 
+    <style>
+        body[data-current-screen="pairing"] #pairing {
+            display: block;
+        }
+
+        body[data-current-screen="connected-to-game"] #connected-to-game {
+            display: block;
+        }
+
+        #pairing {
+            display: none;
+            background-color: yellow;
+        }
+
+        #connected-to-game {
+            display: none;
+            background-color: green;
+        }
+
+    </style>
+
     <script>
         window.rcBowling = {};
     </script>
@@ -14,18 +35,32 @@
     <script>
         var gamePeerId = window.location.search.split('=')[1];
 
-        window.rcBowling.connection.getPeerId().then(function () {
-            return window.rcBowling.connection.connectToPeer(gamePeerId);
-        }).then(function () {
-            var data = 'from controller to game!';
-            window.rcBowling.connection.send({'data': data});
-            document.write('connected to the game');
+        var domContentLoaded = new Promise(function (resolve, reject) {
+            window.document.addEventListener('DOMContentLoaded', function (e) {
+                resolve();
+            });
         });
 
+        function connectToGame(peerId) {
+            return window.rcBowling.connection.getPeerId().then(function () {
+                return window.rcBowling.connection.connectToPeer(peerId);
+            });
+        }
+
+        domContentLoaded.then(function () {
+            document.body.setAttribute('data-current-screen', 'pairing');
+            return connectToGame(gamePeerId);
+        }).then(function () {
+            window.rcBowling.connection.send({connectedToGame: true});
+            document.body.setAttribute('data-current-screen', 'connected-to-game');
+        });
 
     </script>
 </head>
-<body>
+<body data-current-screen="pairing">
+
+<div id="pairing">Pairing...</div>
+<div id="connected-to-game">Connected to the game!</div>
 
 </body>
 </html>

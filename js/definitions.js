@@ -80,7 +80,7 @@ window.rcBowling.definitions = (function () {
 
     def.pin = {
         height: 0.38,
-        mass: 1.5,
+        mass: 1.3,
         modelScale: 0.022,
         friction: 0.2,
         restitution: 0.1,

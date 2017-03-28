@@ -86,98 +86,55 @@
     <script src="js/game.js"></script>
     <script src="js/camera.js"></script>
     <script src="js/connection.js"></script>
-
+    <script src="js/scene.js"></script>
 
     <script type="text/javascript">
-
         var mode = window.location.search.split('mode=')[1];
         var remoteControllerEnabled = mode == 'remote';
 
-
-        function playGame() {
-            var canvas = document.querySelector("#babylon-canvas");
-            var engine = new BABYLON.Engine(canvas, true);
-            var backgroundColor = new BABYLON.Color3(0, 0, 0);
-            var def = window.rcBowling.definitions;
-
-            function createScene() {
-                var scene = new BABYLON.Scene(engine);
-                if (def.debug) {
-                    scene.debugLayer.show();
-                }
-                scene.enablePhysics(def.physics.gravityVector, new BABYLON.CannonJSPlugin());
-                var physicsEngine = scene.getPhysicsEngine();
-                var physicsPlugin = physicsEngine._physicsPlugin;
-                var world = physicsPlugin.world;
-                physicsEngine.setTimeStep(def.physics.timeStep);
-                world.solver.iterations = def.physics.solverIterations;
-                world.solver.tolerance = def.physics.solverTolerance;
-                scene.clearColor = backgroundColor;
-
-                var bowlingSetLoaded = window.rcBowling.bowlingSet.addBowlingSetToScene(scene);
-
-                Promise.all([bowlingSetLoaded]).then(function () {
-                    var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
-
-                    window.rcBowling.track.addTrackToScene(scene);
-                    window.rcBowling.lights.initLights(scene);
-                    window.rcBowling.camera.initCamera(scene, canvas);
-
-                    window.rcBowling.lights.addToRenderShadowList(bowlingBall);
-                    window.rcBowling.bowlingSet.pins.forEach(function (pin) {
-                        window.rcBowling.lights.addToRenderShadowList(pin);
-                    });
-
-                    window.rcBowling.game.startGame();
-
-                    engine.runRenderLoop(function () {
-                        scene.render();
-                    });
-                });
-
-                return scene;
-            }
-
-
-            createScene();
-
-            window.addEventListener("resize", function () {
-                engine.resize();
+        var domContentLoaded = new Promise(function (resolve, reject) {
+            window.document.addEventListener('DOMContentLoaded', function (e) {
+                resolve();
             });
+        });
 
-        }
-
-        window.document.addEventListener('DOMContentLoaded', function (e) {
-
-
-            if (remoteControllerEnabled) {
-                window.document.body.setAttribute('data-current-screen', 'before-load');
-
+        function pairWithController() {
+            return new Promise(function (resolve, reject) {
                 window.rcBowling.connection.getPeerId().then(function (peerId) {
-                    window.document.body.setAttribute('data-current-screen', 'pairing');
                     var serverUrl = location.href.match(/(.*)\/.*\.html/)[1];
-
                     var controllerPageUrl = serverUrl + '/controller.html?gameid=' + peerId;
 
-                    console.debug(controllerPageUrl);
-
-                    window.document.getElementById('controller-page-address-url').textContent = controllerPageUrl;
                     new QRCode('controller-page-address-qr-code', {
                         text: controllerPageUrl,
                         correctLevel: QRCode.CorrectLevel.H
                     });
 
+                    var controllerLinkDom = window.document.getElementById('controller-page-address-url');
+                    controllerLinkDom.setAttribute('href', controllerPageUrl);
+                    controllerLinkDom.textContent = controllerPageUrl;
+
+                    window.document.body.setAttribute('data-current-screen', 'pairing');
+
                     window.rcBowling.connection.listen(function (data) {
                         console.debug('received smth! ', data);
-                        window.document.body.setAttribute('data-current-screen', 'game');
-                        playGame();
+                        resolve();
                     });
                 });
-            } else {
-                playGame();
-            }
+            });
+        }
 
+        domContentLoaded.then(function () {
+            window.document.body.setAttribute('data-current-screen', 'before-load');
+
+            if (remoteControllerEnabled) {
+                return pairWithController();
+            }
+        }).then(function () {
+            var canvasDom = document.getElementById('babylon-canvas');
+            window.document.body.setAttribute('data-current-screen', 'game');
+            window.rcBowling.scene.createScene(canvasDom);
         });
+
     </script>
 
 </head>
@@ -191,7 +148,7 @@
     <div>Scan this QR code with your device...</div>
     <div id="controller-page-address-qr-code"></div>
     <div>or open this URL address on your device</div>
-    <a id="controller-page-address-url"></a>
+    <a id="controller-page-address-url" target="_blank"></a>
     <div>Waiting for connection...</div>
 </div>
 <div id="before-load">Loading...</div>
