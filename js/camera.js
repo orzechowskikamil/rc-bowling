@@ -1,7 +1,7 @@
 window.rcBowling.camera = (function () {
 
     var camera;
-    var scene;
+    var _scene;
 
     var coords = {
         beginning: {
@@ -14,12 +14,12 @@ window.rcBowling.camera = (function () {
         }
     };
 
-    function initCamera(sceneP) {
-        scene = sceneP;
-        camera = new BABYLON.TargetCamera("camera", BABYLON.Vector3.Zero(), scene);
+    function initCamera(scene, canvas) {
+        _scene = scene;
+        camera = new BABYLON.TargetCamera("camera", BABYLON.Vector3.Zero(), _scene);
         camera.attachControl(canvas, false);
-        camera.inertia=5;
-        camera.speed=5;
+        camera.inertia = 5;
+        camera.speed = 5;
         moveToBeginning();
     }
 
@@ -41,7 +41,7 @@ window.rcBowling.camera = (function () {
         // scene.beginAnimation(camera, 0, 30, false);
 
 
-         camera.position = coords.pins.position;
+        camera.position = coords.pins.position;
         camera.setTarget(coords.pins.target);
     }
 

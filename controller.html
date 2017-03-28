@@ -19,6 +19,7 @@
         }).then(function () {
             var data = 'from controller to game!';
             window.rcBowling.connection.send({'data': data});
+            document.write('connected to the game');
         });
 
 

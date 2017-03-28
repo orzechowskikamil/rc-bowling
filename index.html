@@ -4,106 +4,34 @@
     <title>Remote controlled bowling</title>
 
     <style>
-        html, body {
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
+        .choose-mode {
         }
 
-        #babylon-canvas {
-            width: 100%;
-            height: 100%;
-            touch-action: none;
+        .choose-mode-btn {
+        }
+
+        .browser-information {
         }
     </style>
 
-    <!--Minified file is used runtime, while non minified file is kept in project for autocompletion purposes-->
-    <script src="lib/babylon.js/babylon.min.js"></script>
-    <script src="lib/peer.js/peer.min.js"></script>
+    <script>
+        function playWithMouse() {
+            window.location.href = 'game.html?mode=mouse';
+        }
 
-
-    <script type="text/javascript">
-        window.rcBowling = {};
-        /**
-         * quick util to log value without extracting it to variable
-         */
-        function loog(v) {
-            console.debug(v);
-            return v;
+        function playWithMobile() {
+            window.location.href = 'game.html?mode=remote';
         }
     </script>
-
-    <script src="js/definitions.js"></script>
-    <script src="js/track.js"></script>
-    <script src="js/bowlingSet.js"></script>
-    <script src="js/lights.js"></script>
-    <script src="js/game.js"></script>
-    <script src="js/camera.js"></script>
-    <script src="js/connection.js"></script>
-
 </head>
 <body>
-<canvas id="babylon-canvas"></canvas>
-<script type="text/javascript">
 
-    var canvas = document.querySelector("#babylon-canvas");
-    var engine = new BABYLON.Engine(canvas, true);
-    var backgroundColor = new BABYLON.Color3(0, 0, 0);
-    var def = window.rcBowling.definitions;
+<div class="choose-mode">How you want to play?</div>
+<button class="choose-mode-btn" onclick="playWithMouse()">Play with mouse/touch</button>
+<button class="choose-mode-btn" onclick="playWithMobile()">Play with your mobile as remote controller</button>
 
-    function createScene() {
-        var scene = new BABYLON.Scene(engine);
-        if (def.debug) {
-            scene.debugLayer.show();
-        }
-        scene.enablePhysics(def.physics.gravityVector, new BABYLON.CannonJSPlugin());
-        var physicsEngine = scene.getPhysicsEngine();
-        var physicsPlugin = physicsEngine._physicsPlugin;
-        var world = physicsPlugin.world;
-        physicsEngine.setTimeStep(def.physics.timeStep);
-        world.solver.iterations = def.physics.solverIterations;
-        world.solver.tolerance = def.physics.solverTolerance;
-        scene.clearColor = backgroundColor;
-
-        var bowlingSetLoaded = window.rcBowling.bowlingSet.addBowlingSetToScene(scene);
-
-        Promise.all([bowlingSetLoaded]).then(function () {
-            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
-
-            window.rcBowling.track.addTrackToScene(scene);
-            window.rcBowling.lights.initLights(scene);
-            window.rcBowling.camera.initCamera(scene);
-
-            window.rcBowling.lights.addToRenderShadowList(bowlingBall);
-            window.rcBowling.bowlingSet.pins.forEach(function (pin) {
-                window.rcBowling.lights.addToRenderShadowList(pin);
-            });
-
-            window.rcBowling.game.startGame();
-
-            engine.runRenderLoop(function () {
-                scene.render();
-            });
-        });
-
-        return scene;
-    }
-
-    var scene = createScene();
-
-    window.addEventListener("resize", function () {
-        engine.resize();
-    });
-
-    window.rcBowling.connection.getPeerId().then(function (peerId) {
-        window.open('controller.html?gameid=' + peerId, '_blank');
-
-        window.rcBowling.connection.listen(function (data) {
-            console.debug('received smth! ', data);
-        });
-    });
-</script>
+<div class="browser-information">This game works best on Google Chrome. <br>
+    Game experience on other browsers might be terribly slow, or game will even not start.
+</div>
 </body>
 </html>
