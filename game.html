@@ -133,11 +133,8 @@
         }).then(function () {
             var canvasDom = document.getElementById('babylon-canvas');
             window.document.body.setAttribute('data-current-screen', 'game');
+            window.rcBowling.remote = true;
             window.rcBowling.scene.createScene(canvasDom);
-
-            window.rcBowling.connection.listen(function (data) {
-                console.debug(data);
-            });
         });
 
     </script>

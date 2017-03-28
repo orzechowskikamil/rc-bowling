@@ -2,6 +2,28 @@ window.rcBowling.game = (function () {
 
     var def = window.rcBowling.definitions;
 
+    function listenToRemoteEvents() {
+        var speedX = 0;
+        window.rcBowling.connection.listen(function (data) {
+            if (window.rcBowling.bowlingSet.ballDuringThrow) {
+                return;
+            }
+
+            speedX += data.acceleration.x / 100;
+            speedX *= 0.9;
+
+            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
+
+            bowlingBall.position = bowlingBall.position.add(
+                new BABYLON.Vector3(speedX, 0, 0)
+            );
+
+            if (bowlingBall.position.x < -0.5) {bowlingBall.position.x = -0.5}
+            if (bowlingBall.position.x > 0.5) {bowlingBall.position.x = 0.5}
+
+        });
+    }
+
 
     function listenToMouseEvents() {
         document.body.addEventListener('mousemove', function (e) {
@@ -65,7 +87,11 @@ window.rcBowling.game = (function () {
     }
 
     function startGame() {
-        listenToMouseEvents();
+        if (window.rcBowling.remote) {
+            listenToRemoteEvents();
+        } else {
+            listenToMouseEvents();
+        }
         setUpShot();
     }
 
