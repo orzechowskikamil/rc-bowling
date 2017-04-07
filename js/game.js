@@ -3,25 +3,70 @@ window.rcBowling.game = (function () {
     var def = window.rcBowling.definitions;
 
     function listenToRemoteEvents() {
+        var xMovementBounds = 0.5;
+        var last10Fx = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        last10Fx.sum = function () {return this.reduce(function (total, val) { return total + val; }, 0);};
         var speedX = 0;
-        window.rcBowling.connection.listen(function (data) {
+
+        //  var re = [];
+
+        //lewo prawo stoplewo prawo stop
+        var lastT;
+
+        function ondata(data) {
             if (window.rcBowling.bowlingSet.ballDuringThrow) {
                 return;
             }
+            if (typeof data.acceleration !== 'object') {
+                return;
+            }
 
-            speedX += data.acceleration.x / 100;
-            speedX *= 0.9;
+            // //todo gather data and remove
+            //
+            // re.push(data);
+            // if (re.length === 400) {
+            //     console.log(JSON.stringify(re, null));
+            // }
+
+            // speedX = 0;
+
+            // last10Fx.push(data.acceleration.x);
+            // last10Fx.shift();
+
+            // var avgFx = last10Fx.sum() / last10Fx.length;
+            // speedX += avgFx;
+
+
+            var currentT = Date.now();
+            if (typeof lastT === 'undefined') {
+                lastT = currentT;
+                return;
+            }
+
+
+            var dT = currentT - lastT;
+            lastT = currentT;
+
+            speedX += (data.acceleration.x/2000000000)/dT ;
 
             var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
 
             bowlingBall.position = bowlingBall.position.add(
-                new BABYLON.Vector3(speedX, 0, 0)
+                new BABYLON.Vector3(speedX /dT, 0, 0)
             );
 
-            if (bowlingBall.position.x < -0.5) {bowlingBall.position.x = -0.5}
-            if (bowlingBall.position.x > 0.5) {bowlingBall.position.x = 0.5}
+            // if (bowlingBall.position.x < -1 * xMovementBounds) {bowlingBall.position.x = -1 * xMovementBounds}
+            // if (bowlingBall.position.x > xMovementBounds) {bowlingBall.position.x = xMovementBounds}
+        }
 
-        });
+
+        if (window.fakeAccelerometerData) {
+            setInterval(function () {
+                ondata(window.fakeAccelerometerData.shift());
+            }, 1);
+        } else {
+            window.rcBowling.connection.listen(ondata);
+        }
     }
 
 

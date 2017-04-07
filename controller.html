@@ -35,8 +35,8 @@
     <script>
         var gamePeerId = window.location.search.split('=')[1];
 
-        var domContentLoaded = new Promise(function (resolve, reject) {
-            window.document.addEventListener('DOMContentLoaded', function (e) {
+        var domContentLoaded = new Promise(function (resolve) {
+            window.document.addEventListener('DOMContentLoaded', function () {
                 resolve();
             });
         });
