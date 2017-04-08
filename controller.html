@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no"/>
     <title>Remote controlled bowling - Controller</title>
 
     <style>
@@ -13,6 +14,14 @@
             display: block;
         }
 
+        body[data-current-screen="pressed"] #pressed {
+            display: block;
+        }
+
+        body[data-current-screen="not-pressed"] #not-pressed {
+            display: block;
+        }
+
         #pairing {
             display: none;
             background-color: yellow;
@@ -21,6 +30,32 @@
         #connected-to-game {
             display: none;
             background-color: green;
+        }
+
+        #pressed {
+            display: none;
+            background-color: red;
+        }
+
+        #not-pressed {
+            display: none;
+            background-color: blue;
+        }
+
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            user-select: none;
+        }
+
+        body > div {
+            color: white;
+            text-shadow: 0 0 3px black;
+            font-size: 8em;
         }
 
     </style>
@@ -41,10 +76,39 @@
             });
         });
 
+        function wait(ms) {
+            return new Promise(function (resolve, reject) {
+                setTimeout(function () {
+                    resolve();
+                }, ms);
+            });
+        }
+
+        function reportErrorIfDeviceMotionEventAbsent() {
+            var resolveFirstDeviceMotion = function () {};
+            var waitForDeviceMotionEventMs = 10000;
+
+            new Promise(function (resolve, reject) {
+                resolveFirstDeviceMotion = resolve;
+
+                setTimeout(function () {
+                    reject();
+                }, waitForDeviceMotionEventMs);
+            }).catch(function () {
+                reportError('devicemotion seems to not fire properly');
+            });
+
+            return resolveFirstDeviceMotion;
+        }
+
         function connectToGame(peerId) {
             return window.rcBowling.connection.getPeerId().then(function () {
                 return window.rcBowling.connection.connectToPeer(peerId);
             });
+        }
+
+        function reportError(message) {
+            window.rcBowling.connection.send({error: message});
         }
 
         domContentLoaded.then(function () {
@@ -53,22 +117,61 @@
         }).then(function () {
             window.rcBowling.connection.send({connectedToGame: true});
             document.body.setAttribute('data-current-screen', 'connected-to-game');
+            return wait(2000);
+        }).then(function () {
+            var pressed;
 
-            window.addEventListener('devicemotion', function (e) {
-                window.rcBowling.connection.send({
-                    acceleration: {
-                        x: e.acceleration.x,
-                        y: e.acceleration.y,
-                        z: e.acceleration.z
-                    },
-                    rotation: {
-                        alpha: e.rotationRate.alpha,
-                        beta: e.rotationRate.beta,
-                        gamma: e.rotationRate.gamma
+            var firstDeviceMotionHappened = reportErrorIfDeviceMotionEventAbsent();
+
+            function onTouchStart() {
+                pressed = true;
+                document.body.setAttribute('data-current-screen', 'pressed');
+            }
+
+            function onTouchEnd() {
+                pressed = false;
+                document.body.setAttribute('data-current-screen', 'not-pressed');
+            }
+
+            function onDeviceMotion(e) {
+                try {
+                    firstDeviceMotionHappened();
+
+                    if (typeof e.acceleration.x !== 'number') {
+                        reportError('devicemotion acceleration seems to be null');
                     }
-                });
-            });
 
+                    var dataToSend = {
+                        acceleration: {
+                            x: e.acceleration.x,
+                            y: e.acceleration.y,
+                            z: e.acceleration.z
+                        },
+                        rotation: {
+                            alpha: e.rotationRate.alpha,
+                            beta: e.rotationRate.beta,
+                            gamma: e.rotationRate.gamma
+                        },
+                        pressed: pressed
+                    };
+
+                    window.rcBowling.connection.send(dataToSend);
+                } catch (e) {
+                    reportError(e.message);
+                }
+            }
+
+
+            try {
+                onTouchEnd();
+                document.addEventListener('mousedown', onTouchStart);
+                document.addEventListener('touchstart', onTouchStart);
+                document.addEventListener('mouseup', onTouchEnd);
+                document.addEventListener('touchend', onTouchEnd);
+                window.addEventListener('devicemotion', onDeviceMotion);
+            } catch (e) {
+                reportError(e.message);
+            }
         });
 
     </script>
@@ -77,6 +180,8 @@
 
 <div id="pairing">Pairing...</div>
 <div id="connected-to-game">Connected to the game!</div>
+<div id="not-pressed">Hold screen to catch the ball</div>
+<div id="pressed">Make a movement and release screen to throw the ball!</div>
 
 </body>
 </html>

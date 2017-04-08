@@ -9,7 +9,8 @@ window.rcBowling.definitions = (function () {
         desiredFps: 60,
         solverIterations: 40,
         solverTolerance: 0.001,
-        throwForceAdjustment: {x: 10, y: -0.05, z: 15}
+        mouseThrowForceAdjustment: {x: 10, y: -0.05, z: 25},
+        mobileThrowForceAdjustment: {x: 0.1, y: 0.2, z: 0.3}
     };
     def.physics.timeStep = 1 / def.physics.desiredFps;
 

@@ -3,17 +3,14 @@ window.rcBowling.game = (function () {
     var def = window.rcBowling.definitions;
 
     function listenToRemoteEvents() {
-        var xMovementBounds = 0.5;
-        var last10Fx = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        last10Fx.sum = function () {return this.reduce(function (total, val) { return total + val; }, 0);};
-        var speedX = 0;
+        var lastPressed = false;
+        var forces = [];
+        var forcesAmount = 50;
 
-        //  var re = [];
-
-        //lewo prawo stoplewo prawo stop
-        var lastT;
-
-        function ondata(data) {
+        window.rcBowling.connection.listen(function (data) {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             if (window.rcBowling.bowlingSet.ballDuringThrow) {
                 return;
             }
@@ -21,52 +18,32 @@ window.rcBowling.game = (function () {
                 return;
             }
 
-            // //todo gather data and remove
-            //
-            // re.push(data);
-            // if (re.length === 400) {
-            //     console.log(JSON.stringify(re, null));
-            // }
-
-            // speedX = 0;
-
-            // last10Fx.push(data.acceleration.x);
-            // last10Fx.shift();
-
-            // var avgFx = last10Fx.sum() / last10Fx.length;
-            // speedX += avgFx;
-
-
-            var currentT = Date.now();
-            if (typeof lastT === 'undefined') {
-                lastT = currentT;
-                return;
+            var userHoldBall = data.pressed === true;
+            if (userHoldBall) {
+                forces.push(data.acceleration);
+                if (forces.length > forcesAmount) {
+                    forces.shift();
+                }
             }
 
+            var userReleaseBall = data.pressed === false && lastPressed === true;
+            if (userReleaseBall) {
+                var avgForce = forces.reduce(function (total, val, i, arr) {
+                    total.x += val.x;
+                    total.y += val.y;
+                    total.z += val.z;
+                    return total;
+                }, {x: 0, y: 0, z: 0});
 
-            var dT = currentT - lastT;
-            lastT = currentT;
+                throwBall(new BABYLON.Vector3(
+                    avgForce.x * def.physics.mobileThrowForceAdjustment.x,
+                    avgForce.y * def.physics.mobileThrowForceAdjustment.y,
+                    avgForce.z * def.physics.mobileThrowForceAdjustment.z
+                ));
+            }
 
-            speedX += (data.acceleration.x/2000000000)/dT ;
-
-            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
-
-            bowlingBall.position = bowlingBall.position.add(
-                new BABYLON.Vector3(speedX /dT, 0, 0)
-            );
-
-            // if (bowlingBall.position.x < -1 * xMovementBounds) {bowlingBall.position.x = -1 * xMovementBounds}
-            // if (bowlingBall.position.x > xMovementBounds) {bowlingBall.position.x = xMovementBounds}
-        }
-
-
-        if (window.fakeAccelerometerData) {
-            setInterval(function () {
-                ondata(window.fakeAccelerometerData.shift());
-            }, 1);
-        } else {
-            window.rcBowling.connection.listen(ondata);
-        }
+            lastPressed = data.pressed;
+        });
     }
 
 
@@ -102,7 +79,7 @@ window.rcBowling.game = (function () {
                     duration: finalEvent.timestamp - initialEvent.timestamp
                 };
 
-                var forceAdjustment = def.physics.throwForceAdjustment;
+                var forceAdjustment = def.physics.mouseThrowForceAdjustment;
 
                 var throwForceVector = new BABYLON.Vector3(
                     movement.x * forceAdjustment.x / movement.duration,
