@@ -152,7 +152,8 @@
                             beta: e.rotationRate.beta,
                             gamma: e.rotationRate.gamma
                         },
-                        pressed: pressed
+                        pressed: pressed,
+                        timestamp: Date.now()
                     };
 
                     window.rcBowling.connection.send(dataToSend);

@@ -4,8 +4,11 @@ window.rcBowling.game = (function () {
 
     function listenToRemoteEvents() {
         var lastPressed = false;
+        var lastTimestamp;
         var forces = [];
         var forcesAmount = 50;
+        var filter = new Kalman1DFilter();
+        var v = 0, x = 0;
 
         window.rcBowling.connection.listen(function (data) {
             if (data.error) {
@@ -18,7 +21,41 @@ window.rcBowling.game = (function () {
                 return;
             }
 
-            var userHoldBall = data.pressed === true;
+            var userHoldBall, userReleaseBall, userMovesWithBall;
+
+            if (data.pressed === false) {
+                if (lastPressed === true) {
+                    userReleaseBall = true;
+                } else {
+                    userMovesWithBall = true;
+                }
+            } else {
+                userHoldBall = true;
+            }
+
+
+            if (userMovesWithBall && lastTimestamp) {
+                var fx = data.acceleration.x;
+                var dt = data.timestamp - lastTimestamp;
+                var dv = fx * dt / 1000;
+                v = v + dv;
+                var dx = v * dt / 1000;
+                x = x + dx;
+
+                if (x > 1) {
+                    x = 1;
+                    v = 0;
+                }
+
+                if (x < -1) {
+                    x = -1;
+                    v = 0;
+                }
+
+                var filteredX = filter.getFilteredValue(x);
+                window.rcBowling.bowlingSet.bowlingBall.position.x = filteredX;
+            }
+
             if (userHoldBall) {
                 forces.push(data.acceleration);
                 if (forces.length > forcesAmount) {
@@ -26,7 +63,6 @@ window.rcBowling.game = (function () {
                 }
             }
 
-            var userReleaseBall = data.pressed === false && lastPressed === true;
             if (userReleaseBall) {
                 var avgForce = forces.reduce(function (total, val, i, arr) {
                     total.x += val.x;
@@ -43,7 +79,45 @@ window.rcBowling.game = (function () {
             }
 
             lastPressed = data.pressed;
+            lastTimestamp = data.timestamp;
         });
+    }
+
+    function Kalman1DFilter() {
+
+        var options = {
+            stateTransition: 1.0,
+            observation: 1.0,
+            initialState: 1.0,
+            initialCovariance: 1.0,
+            processError: 0.001,
+            measurementError: 0.001
+        };
+
+        var controlVector = $M([[0]]);
+        var filter = new LinearKalmanFilter(
+            $M([[options.stateTransition]]),
+            $M([[0]]),
+            $M([[options.observation]]),
+            $M([[options.initialState]]),
+            $M([[options.initialCovariance]]),
+            $M([[options.processError]]),
+            $M([[options.measurementError]])
+        );
+
+        this.getFilteredValue = function (noisyValue) {
+            filter.predict(controlVector);
+            filter.observe($M([[noisyValue]]));
+            filter.update();
+
+            var filteredValue = filter.getStateEstimate().e(1, 1);
+            // var predictedState = filter.predictedStateEstimate.e(1, 1);
+            // var predictedProbability = filter.predictedProbabilityEstimate.e(1, 1);
+            // var covariance = filter.covarianceEstimate.e(1, 1);
+            // var gain = filter.kalmanGain.e(1, 1);
+            // var innovation = filter.innovation.e(1, 1);
+            return filteredValue;
+        };
     }
 
 
