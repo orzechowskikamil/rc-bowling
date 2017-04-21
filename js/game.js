@@ -36,8 +36,9 @@ window.rcBowling.game = (function () {
 
             if (userMovesWithBall && lastTimestamp) {
                 var fx = data.acceleration.x;
+                var filteredFx = filter.getFilteredValue(fx);
                 var dt = data.timestamp - lastTimestamp;
-                var dv = fx * dt / 1000;
+                var dv = filteredFx * dt / 1000;
                 v = v + dv;
                 var dx = v * dt / 1000;
                 x = x + dx;
@@ -52,8 +53,8 @@ window.rcBowling.game = (function () {
                     v = 0;
                 }
 
-                var filteredX = filter.getFilteredValue(x);
-                window.rcBowling.bowlingSet.bowlingBall.position.x = filteredX;
+
+                window.rcBowling.bowlingSet.bowlingBall.position.x = x;
             }
 
             if (userHoldBall) {
