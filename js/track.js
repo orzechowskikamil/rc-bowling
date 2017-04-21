@@ -7,7 +7,7 @@ window.rcBowling.track = (function () {
 
 
     function loadMaterials(scene) {
-        var woodTexture = new BABYLON.Texture('assets/wood.jpg', scene);
+        let woodTexture = new BABYLON.Texture('assets/wood.jpg', scene);
         woodTexture.uScale = 5;
         woodTexture.vScale = 1;
         woodMaterial = new BABYLON.StandardMaterial('wood-material', scene);
@@ -18,21 +18,24 @@ window.rcBowling.track = (function () {
 
 
     function addSinkToScene(name, positionVector, scene) {
-        var width = def.sink.width;
-        var height = 0.01;
-        var depth = def.sink.depth;
-        var maxAngle = Math.PI * 0.2;
-        var maxX = width * 0.35;
-        var maxY = height * 1.3;
+        let width = def.sink.width;
+        let height = 0.01;
+        let depth = def.sink.depth;
+        let maxAngle = Math.PI * 0.2;
+        let maxX = width * 0.35;
+        let maxY = height * 1.3;
 
-        [{x: -1 * maxX, y: maxY, angle: -1 * maxAngle},
+
+        let sinkLayers = [
+            {x: -1 * maxX, y: maxY, angle: -1 * maxAngle},
             {x: -0.7 * maxX, y: maxY * 0.5, angle: -0.7 * maxAngle},
             {x: -0.3 * maxX, y: maxY * 0.2, angle: -0.4 * maxAngle},
             {x: 0.3 * maxX, y: maxY * 0.2, angle: 0.4 * maxAngle},
             {x: 0.7 * maxX, y: maxY * 0.5, angle: 0.7 * maxAngle},
             {x: maxX, y: maxY, angle: maxAngle}
-        ].forEach(function (val, i) {
-            var sinkWallMesh = BABYLON.MeshBuilder.CreateBox(name + '-' + i, {
+        ];
+        sinkLayers.forEach((val, i) => {
+            let sinkWallMesh = BABYLON.MeshBuilder.CreateBox(`${name}-${i}`, {
                 width: width / 3,
                 height: height,
                 depth: depth
@@ -49,14 +52,14 @@ window.rcBowling.track = (function () {
     }
 
     function addFloorToScene(name, width, depth, position, u, v, physics, scene) {
-        var trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
+        let trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
             width: width,
             height: def.floor.height,
             depth: depth,
         }, scene);
         trackMesh.position = position;
         trackMesh.receiveShadows = true;
-        trackMesh.material = woodMaterial.clone('floor-' + name + '-material');
+        trackMesh.material = woodMaterial.clone(`floor-${name}-material`);
         trackMesh.material.diffuseTexture.uScale = u;
         trackMesh.material.diffuseTexture.vScale = v;
         if (physics) {
@@ -75,8 +78,8 @@ window.rcBowling.track = (function () {
             {name: 'front', def: def.floor.front},
             {name: 'left', def: def.floor.left},
             {name: 'right', def: def.floor.right}
-        ].forEach(function (val, i, arr) {
-            addFloorToScene('floor-' + val.name, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, val.def.physics, scene);
+        ].forEach((val, i, arr)=> {
+            addFloorToScene(`floor-${val.name}`, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, val.def.physics, scene);
         });
 
         addSinkToScene('left-sink', def.sink.leftSinkPosition, scene);

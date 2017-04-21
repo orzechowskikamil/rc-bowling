@@ -1,41 +1,41 @@
 window.rcBowling.scene = (function () {
 
     function createScene(canvasDom) {
-        var engine = new BABYLON.Engine(canvasDom, true);
-        var backgroundColor = new BABYLON.Color3(0, 0, 0);
-        var def = window.rcBowling.definitions;
+        let engine = new BABYLON.Engine(canvasDom, true);
+        let backgroundColor = new BABYLON.Color3(0, 0, 0);
+        let def = window.rcBowling.definitions;
 
 
-        var scene = new BABYLON.Scene(engine);
+        let scene = new BABYLON.Scene(engine);
         if (def.debug) {
             scene.debugLayer.show();
         }
 
         scene.enablePhysics(def.physics.gravityVector, new BABYLON.CannonJSPlugin());
-        var physicsEngine = scene.getPhysicsEngine();
-        var physicsPlugin = physicsEngine._physicsPlugin;
-        var world = physicsPlugin.world;
+        let physicsEngine = scene.getPhysicsEngine();
+        let physicsPlugin = physicsEngine._physicsPlugin;
+        let world = physicsPlugin.world;
         physicsEngine.setTimeStep(def.physics.timeStep);
         world.solver.iterations = def.physics.solverIterations;
         world.solver.tolerance = def.physics.solverTolerance;
         scene.clearColor = backgroundColor;
 
-        window.rcBowling.bowlingSet.addBowlingSetToScene(scene).then(function () {
-            var bowlingBall = window.rcBowling.bowlingSet.bowlingBall;
+        window.rcBowling.bowlingSet.addBowlingSetToScene(scene).then(()=> {
+            let bowlingBall = window.rcBowling.bowlingSet.getBowlingBall();
             window.rcBowling.track.addTrackToScene(scene);
             window.rcBowling.lights.initLights(scene);
             window.rcBowling.camera.initCamera(scene, canvasDom);
             window.rcBowling.lights.addToRenderShadowList(bowlingBall);
-            window.rcBowling.bowlingSet.pins.forEach(function (pin) {
+            window.rcBowling.bowlingSet.getPins().forEach((pin)=> {
                 window.rcBowling.lights.addToRenderShadowList(pin);
             });
             window.rcBowling.game.startGame();
-            engine.runRenderLoop(function () {
+            engine.runRenderLoop(()=> {
                 scene.render();
             });
         });
 
-        window.addEventListener("resize", function () {
+        window.addEventListener("resize", ()=> {
             engine.resize();
         });
     }

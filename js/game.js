@@ -3,22 +3,22 @@ window.rcBowling.game = (function () {
     var def = window.rcBowling.definitions;
 
     function listenToRemoteEvents() {
-        var lastPressed = false;
-        var forces = [];
-        var forcesAmount = 50;
+        let lastPressed = false;
+        let forces = [];
+        let forcesAmount = 50;
 
-        window.rcBowling.connection.listen(function (data) {
+        window.rcBowling.connection.listen((data)=> {
             if (data.error) {
                 throw new Error(data.error);
             }
-            if (window.rcBowling.bowlingSet.ballDuringThrow) {
+            if (window.rcBowling.bowlingSet.isBallDuringThrow()) {
                 return;
             }
             if (typeof data.acceleration !== 'object') {
                 return;
             }
 
-            var userHoldBall = data.pressed === true;
+            let userHoldBall = data.pressed === true;
             if (userHoldBall) {
                 forces.push(data.acceleration);
                 if (forces.length > forcesAmount) {
@@ -26,14 +26,11 @@ window.rcBowling.game = (function () {
                 }
             }
 
-            var userReleaseBall = data.pressed === false && lastPressed === true;
+            let userReleaseBall = data.pressed === false && lastPressed === true;
             if (userReleaseBall) {
-                var avgForce = forces.reduce(function (total, val, i, arr) {
-                    total.x += val.x;
-                    total.y += val.y;
-                    total.z += val.z;
-                    return total;
-                }, {x: 0, y: 0, z: 0});
+                let avgForce = forces.reduce((sum, val)=>
+                        ({x: sum.x + val.x, y: sum.y + val.y, z: sum.z + val.z}),
+                    {x: 0, y: 0, z: 0});
 
                 throwBall(new BABYLON.Vector3(
                     avgForce.x * def.physics.mobileThrowForceAdjustment.x,
@@ -48,40 +45,40 @@ window.rcBowling.game = (function () {
 
 
     function listenToMouseEvents() {
-        document.body.addEventListener('mousemove', function (e) {
-            if (window.rcBowling.bowlingSet.ballDuringThrow) {
+        document.body.addEventListener('mousemove', (e) => {
+            if (window.rcBowling.bowlingSet.isBallDuringThrow()) {
                 return;
             }
-            var xPercent = e.screenX / window.screen.width;
+            let xPercent = e.screenX / window.screen.width;
 
-            window.rcBowling.bowlingSet.bowlingBall.position = new BABYLON.Vector3(
+            window.rcBowling.bowlingSet.getBowlingBall().position = new BABYLON.Vector3(
                 xPercent * def.floor.track.width - def.floor.track.width / 2,
                 def.ball.initialPosition.y,
                 def.ball.initialPosition.z
             );
         });
 
-        document.body.addEventListener('mousedown', function (e) {
-            if (window.rcBowling.bowlingSet.ballDuringThrow) {
+        document.body.addEventListener('mousedown', (e)=> {
+            if (window.rcBowling.bowlingSet.isBallDuringThrow()) {
                 return;
             }
 
-            var initialEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
+            let initialEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
 
-            var onMouseUp = function (e) {
+            let onMouseUp = function (e) {
                 document.body.removeEventListener('mouseup', onMouseUp, true);
 
-                var finalEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
+                let finalEvent = {x: e.screenX, y: e.screenY, timestamp: new Date().getTime()};
 
-                var movement = {
+                let movement = {
                     x: finalEvent.x - initialEvent.x,
                     y: finalEvent.y - initialEvent.y,
                     duration: finalEvent.timestamp - initialEvent.timestamp
                 };
 
-                var forceAdjustment = def.physics.mouseThrowForceAdjustment;
+                let forceAdjustment = def.physics.mouseThrowForceAdjustment;
 
-                var throwForceVector = new BABYLON.Vector3(
+                let throwForceVector = new BABYLON.Vector3(
                     movement.x * forceAdjustment.x / movement.duration,
                     movement.y * forceAdjustment.y,
                     Math.abs(movement.y) * forceAdjustment.z / movement.duration
@@ -93,7 +90,7 @@ window.rcBowling.game = (function () {
     }
 
     function waitForBallInMiddlewayAndMoveCameraToPins() {
-        var id = setInterval(function () {
+        let id = setInterval(()=> {
             if (!window.rcBowling.bowlingSet.isBallCrossedMiddleOfTrack()) {
                 return;
             }
@@ -120,16 +117,16 @@ window.rcBowling.game = (function () {
     function setUpShot() {
         window.rcBowling.bowlingSet.setUpPinsAndBall();
 
-        var watchTrackIntervalID = setInterval(function () {
+        let watchTrackIntervalID = setInterval(() => {
             if (!window.rcBowling.bowlingSet.isBallThrowFinished()) {
                 return;
             }
 
             clearInterval(watchTrackIntervalID);
 
-            setTimeout(function () {
-                var knockedPins = window.rcBowling.bowlingSet.getAmountOfKnockedPins();
-                alert('you knocked ' + knockedPins + ' pins!');
+            setTimeout(()=> {
+                let knockedPins = window.rcBowling.bowlingSet.getAmountOfKnockedPins();
+                alert(`you knocked ${knockedPins} pins!`);
                 window.rcBowling.camera.moveToBeginning();
                 setUpShot();
             }, 5 * 1000);

@@ -11,7 +11,7 @@ window.rcBowling.bowlingSet = (function () {
         ballMaterial = new BABYLON.StandardMaterial('ball-texture', scene);
         ballMaterial.diffuseTexture = new BABYLON.Texture('assets/ball.png', scene);
 
-        var pinTexture = new BABYLON.Texture('assets/pin.png', scene);
+        let pinTexture = new BABYLON.Texture('assets/pin.png', scene);
         pinTexture.uScale = 1;
         pinTexture.vScale = 1.9;
         pinMaterial = new BABYLON.StandardMaterial('pin-texture', scene);
@@ -29,18 +29,18 @@ window.rcBowling.bowlingSet = (function () {
         }, scene);
 
         // hide ball initially to avoid problems
-        var invisiblePositionVector = new BABYLON.Vector3(100, -100, -100);
+        let invisiblePositionVector = new BABYLON.Vector3(100, -100, -100);
         bowlingBall.position = invisiblePositionVector;
     }
 
     function placePins() {
-        pins.forEach(function (pinMesh, i) {
-            var pinPositionInLayout = def.pin.pinsInitialLayout[i];
+        pins.forEach((pinMesh, i) => {
+            let pinPositionInLayout = def.pin.pinsInitialLayout[i];
 
             pinMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
             pinMesh.impostor.setAngularVelocity(new BABYLON.Vector3(0, 0, 0));
             pinMesh.impostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
-            setTimeout(function () {
+            setTimeout(()=> {
                 pinMesh.position = new BABYLON.Vector3(
                     pinPositionInLayout.x * def.pin.spacing.x + def.pin.pinSetPosition.x,
                     def.pin.pinSetPosition.y,
@@ -51,31 +51,31 @@ window.rcBowling.bowlingSet = (function () {
     }
 
     function addPinsToScene(scene) {
-        var assetsManager = new BABYLON.AssetsManager(scene);
+        let assetsManager = new BABYLON.AssetsManager(scene);
 
-        return new Promise(function (resolve, reject) {
-            var meshTask = assetsManager.addMeshTask('bowling task', '', "assets/", "bs.obj");
+        return new Promise((resolve, reject)=> {
+            let meshTask = assetsManager.addMeshTask('bowling task', '', "assets/", "bs.obj");
 
-            setTimeout(function () {
+            setTimeout(()=> {
                 reject();
             }, 10 * 1000);
 
             meshTask.onSuccess = function (result) {
-                var bowlingBallMeshFromOBJ = result.loadedMeshes[1];
-                var pinMeshFromOBJ = result.loadedMeshes[0];
+                let bowlingBallMeshFromOBJ = result.loadedMeshes[1];
+                let pinMeshFromOBJ = result.loadedMeshes[0];
                 bowlingBallMeshFromOBJ.dispose();
 
-                var pinModelScaling = def.pin.modelScale * def.pin.height;
+                let pinModelScaling = def.pin.modelScale * def.pin.height;
                 pinMeshFromOBJ.scaling = new BABYLON.Vector3(pinModelScaling, pinModelScaling, pinModelScaling);
                 pinMeshFromOBJ.material = pinMaterial;
 
                 pins = [];
 
-                for (var i = 0, max = def.pin.pinsInitialLayout.length; i < max; i++) {
-                    var pinMesh = pinMeshFromOBJ.clone('pin-' + i);
+                for (let i = 0, max = def.pin.pinsInitialLayout.length; i < max; i++) {
+                    let pinMesh = pinMeshFromOBJ.clone(`pin-${i}`);
                     pinMesh.numberInLayout = i;
 
-                    var invisiblePosition = new BABYLON.Vector3(-100 * i, -100, -100);
+                    let invisiblePosition = new BABYLON.Vector3(-100 * i, -100, -100);
                     pinMesh.position = invisiblePosition;
 
                     pinMesh.impostor = new BABYLON.PhysicsImpostor(pinMesh, BABYLON.PhysicsImpostor.CylinderImpostor, {
@@ -105,7 +105,7 @@ window.rcBowling.bowlingSet = (function () {
         bowlingBall.impostor.setMass(def.ball.mass);
         // seems very stupid, but applying a force don't work just after changing mass.
         // It's required to do small timeout.
-        setTimeout(function () {
+        setTimeout(()=> {
             bowlingBall.impostor.applyImpulse(throwForceVector, bowlingBall.getAbsolutePosition());
         }, 1);
     }
@@ -121,11 +121,11 @@ window.rcBowling.bowlingSet = (function () {
     }
 
     function getAmountOfKnockedPins() {
-        return pins.reduce(function (total, val, i, arr) {
-            var yR = val.rotationQuaternion.toEulerAngles().y;
-            var y = val.position.y;
-            var pinKnockedOut = yR > 0.3 || yR < -0.3;
-            var pinFallUnderTrack = y < def.floor.track.position.y - 1;
+        return pins.reduce((total, val, i, arr)=> {
+            let yR = val.rotationQuaternion.toEulerAngles().y;
+            let y = val.position.y;
+            let pinKnockedOut = yR > 0.3 || yR < -0.3;
+            let pinFallUnderTrack = y < def.floor.track.position.y - 1;
 
             return total + (pinKnockedOut || pinFallUnderTrack ? 1 : 0);
         }, 0);
@@ -134,15 +134,15 @@ window.rcBowling.bowlingSet = (function () {
     function isBallThrowFinished() {
         if (!ballDuringThrow) {return false;}
 
-        var pos = bowlingBall.position;
-        var v = bowlingBall.impostor.getLinearVelocity();
+        let pos = bowlingBall.position;
+        let v = bowlingBall.impostor.getLinearVelocity();
 
-        var ballOutsideTrack = pos.z > def.floor.track.depth
+        let ballOutsideTrack = pos.z > def.floor.track.depth
             || pos.x > def.floor.track.width
             || pos.x < def.floor.track.width * -1
             || pos.y < def.floor.track.position.y - 1;
 
-        var ballStopped = v.x < 0.01 && v.y < 0.01 && v.z < 0.01;
+        let ballStopped = v.x < 0.01 && v.y < 0.01 && v.z < 0.01;
 
         return ballOutsideTrack || ballStopped;
     }
@@ -158,7 +158,7 @@ window.rcBowling.bowlingSet = (function () {
             return false;
         }
 
-        var middleOfTrackZ = def.floor.track.depth / 2;
+        let middleOfTrackZ = def.floor.track.depth / 2;
 
         return bowlingBall.position.z > middleOfTrackZ;
     }
@@ -174,13 +174,13 @@ window.rcBowling.bowlingSet = (function () {
     }
 
     return {
-        get bowlingBall() {
+        getBowlingBall() {
             return bowlingBall;
         },
-        get pins() {
+        getPins() {
             return pins;
         },
-        get ballDuringThrow() {
+        isBallDuringThrow() {
             return ballDuringThrow;
         },
         addBowlingSetToScene: addBowlingSetToScene,
@@ -188,7 +188,7 @@ window.rcBowling.bowlingSet = (function () {
         getAmountOfKnockedPins: getAmountOfKnockedPins,
         setUpPinsAndBall: setUpPinsAndBall,
         isBallThrowFinished: isBallThrowFinished,
-        isBallCrossedMiddleOfTrack:isBallCrossedMiddleOfTrack
+        isBallCrossedMiddleOfTrack: isBallCrossedMiddleOfTrack
 
     }
 }());

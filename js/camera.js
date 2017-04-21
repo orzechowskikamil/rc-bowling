@@ -3,7 +3,7 @@ window.rcBowling.camera = (function () {
     var camera;
     var _scene;
 
-    var coords = {
+    let coords = {
         beginning: {
             position: new BABYLON.Vector3(0, 1.5, -3),
             target: new BABYLON.Vector3(0, 0.9, 2)
@@ -26,7 +26,7 @@ window.rcBowling.camera = (function () {
 
     function moveToPins() {
         // debugger
-        // var cameraBeginningAnimation = new BABYLON.Animation(
+        // let cameraBeginningAnimation = new BABYLON.Animation(
         //     'anim',
         //     'position',
         //     30,

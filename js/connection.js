@@ -18,14 +18,14 @@ window.rcBowling.connection = (function () {
      * @returns {Promise}
      */
     function getPeerId() {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject)=> {
             peer = new Peer({key: apiKey});
-            peer.on('open', function (id) {
+            peer.on('open', (id)=> {
                 peerId = id;
-                peer.on('connection', function (incomingConnection) {
+                peer.on('connection', (incomingConnection) => {
                     currentConnection = incomingConnection;
-                    currentConnection.on('data', function (data) {
-                        onReceiveCallback.call(null,data);
+                    currentConnection.on('data', (data) => {
+                        onReceiveCallback.call(null, data);
                     });
                 });
                 resolve(peerId);
@@ -44,9 +44,9 @@ window.rcBowling.connection = (function () {
 
 
     function connectToPeer(peerId) {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject)=> {
             currentConnection = peer.connect(peerId);
-            currentConnection.on('open', function () {
+            currentConnection.on('open', ()=> {
                 resolve();
             });
         });
