@@ -1,5 +1,4 @@
 window.rcBowling.definitions = (function () {
-
     var def = {};
 
     def.debug = false;
@@ -27,31 +26,20 @@ window.rcBowling.definitions = (function () {
         segments: 10
     };
 
+
+    def.sink = {
+        width: 0.17,
+        mass: 0,
+        depth: 17
+    };
+
+
     def.floor = {
-        track: {
-            width: 1,
-            depth: 18,
-            u: 5,
-            v: 1,
-            physics: true
-        },
-        left: {
-            width: 5,
-            depth: 17,
-            u: 5,
-            v: 5
-        },
-        right: {
-            width: 5,
-            depth: 17,
-            u: 5,
-            v: 5
-        },
-        front: {
-            width: 10,
-            depth: 3,
-            u: 1,
-            v: 15
+        floors: {
+            track: {width: 1, depth: 18, u: 5, v: 1, physics: true},
+            left: {width: 5, depth: 17, u: 5, v: 5},
+            right: {width: 5, depth: 17, u: 5, v: 5},
+            front: {width: 10, depth: 3, u: 1, v: 15},
         },
         height: 0.3,
         mass: 0,
@@ -59,25 +47,30 @@ window.rcBowling.definitions = (function () {
         restitution: 0.1
     };
 
-    def.sink = {
-        width: 0.17,
-        mass: 0,
-        depth: 17,
+
+    def.floor.floors.track.position = new BABYLON.Vector3(0, 0, def.floor.floors.track.depth / 2);
+    def.floor.floors.left.position = new BABYLON.Vector3(
+        def.floor.floors.track.width / -2 + def.sink.width * -1 + def.floor.floors.left.width / -2,
+        0,
+        def.floor.floors.left.depth / 2
+    );
+    def.floor.floors.right.position = new BABYLON.Vector3(
+        def.floor.floors.track.width / 2 + def.sink.width + def.floor.floors.left.width / 2,
+        0,
+        def.floor.floors.left.depth / 2
+    );
+    def.floor.floors.front.position = new BABYLON.Vector3(0, 0, def.floor.floors.front.depth / -2);
+
+
+    def.wall = {
+        height: 2,
+        walls: {
+            left: {width: 0.1, depth: 17, position: new BABYLON.Vector3(-2, 1, 0)},
+            right: {width: 0.1, depth: 17, position: new BABYLON.Vector3(2, 1, 0)},
+            leftback: {width: 4, depth: 0.1, position: new BABYLON.Vector3(-3.0, 1, 17)},
+            rightback: {width: 4, depth: 0.1, position: new BABYLON.Vector3(3.0, 1, 17)}
+        }
     };
-
-
-    def.floor.track.position = new BABYLON.Vector3(0, 0, def.floor.track.depth / 2);
-    def.floor.left.position = new BABYLON.Vector3(
-        def.floor.track.width / -2 + def.sink.width * -1 + def.floor.left.width / -2,
-        0,
-        def.floor.left.depth / 2
-    );
-    def.floor.right.position = new BABYLON.Vector3(
-        def.floor.track.width / 2 + def.sink.width + def.floor.left.width / 2,
-        0,
-        def.floor.left.depth / 2
-    );
-    def.floor.front.position = new BABYLON.Vector3(0, 0, def.floor.front.depth / -2);
 
     def.pin = {
         height: 0.38,
@@ -85,7 +78,7 @@ window.rcBowling.definitions = (function () {
         modelScale: 0.022,
         friction: 0.2,
         restitution: 0.1,
-        pinSetPosition: {x: 0, y: 0.4, z: def.floor.track.depth - 0.9},
+        pinSetPosition: {x: 0, y: 0.4, z: def.floor.floors.track.depth - 0.9},
         spacing: {x: 0.13, z: 0.20},
         linearDamping: 0.3,
         angularDamping: 0.3,
@@ -104,8 +97,8 @@ window.rcBowling.definitions = (function () {
     };
 
 
-    def.sink.leftSinkPosition = new BABYLON.Vector3(def.floor.track.width / -2 - def.sink.width / 2, 0.115, def.sink.depth / 2);
-    def.sink.rightSinkPosition = new BABYLON.Vector3(def.floor.track.width / 2 + def.sink.width / 2, 0.115, def.sink.depth / 2);
+    def.sink.leftSinkPosition = new BABYLON.Vector3(def.floor.floors.track.width / -2 - def.sink.width / 2, 0.115, def.sink.depth / 2);
+    def.sink.rightSinkPosition = new BABYLON.Vector3(def.floor.floors.track.width / 2 + def.sink.width / 2, 0.115, def.sink.depth / 2);
 
     return def;
 }());

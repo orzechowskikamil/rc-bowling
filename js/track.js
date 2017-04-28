@@ -34,15 +34,15 @@ window.rcBowling.track = (function () {
             {x: 0.7 * maxX, y: maxY * 0.5, angle: 0.7 * maxAngle},
             {x: maxX, y: maxY, angle: maxAngle}
         ];
-        sinkLayers.forEach((val, i) => {
+        sinkLayers.forEach(({x, y, angle}, i) => {
             let sinkWallMesh = BABYLON.MeshBuilder.CreateBox(`${name}-${i}`, {
                 width: width / 3,
                 height: height,
                 depth: depth
             }, scene);
             sinkWallMesh.material = plasticMaterial;
-            sinkWallMesh.position = positionVector.add(new BABYLON.Vector3(val.x, val.y, 0));
-            sinkWallMesh.rotation = new BABYLON.Vector3(0, 0, val.angle);
+            sinkWallMesh.position = positionVector.add(new BABYLON.Vector3(x, y, 0));
+            sinkWallMesh.rotation = new BABYLON.Vector3(0, 0, angle);
             sinkWallMesh.impostor = new BABYLON.PhysicsImpostor(sinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: def.sink.mass,
                 friction: def.sink.friction,
@@ -71,19 +71,31 @@ window.rcBowling.track = (function () {
         }
     }
 
+    function addWallToScene(name, width, depth, position, scene) {
+        let trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
+            width: width,
+            height: def.wall.height,
+            depth: depth,
+        }, scene);
+        trackMesh.position = position;
+        trackMesh.receiveShadows = true;
+        trackMesh.material = woodMaterial.clone(`wall-${name}-material`);
+    }
+
     function addTrackToScene(scene) {
         loadMaterials(scene);
-        [
-            {name: 'track', def: def.floor.track},
-            {name: 'front', def: def.floor.front},
-            {name: 'left', def: def.floor.left},
-            {name: 'right', def: def.floor.right}
-        ].forEach((val, i, arr)=> {
-            addFloorToScene(`floor-${val.name}`, val.def.width, val.def.depth, val.def.position, val.def.u, val.def.v, val.def.physics, scene);
-        });
+
+        for (let [name,floor] of Object.entries(def.floor.floors)) {
+            addFloorToScene(`floor-${name}`, floor.width, floor.depth, floor.position,
+                floor.u, floor.v, floor.physics, scene);
+        }
 
         addSinkToScene('left-sink', def.sink.leftSinkPosition, scene);
         addSinkToScene('right-sink', def.sink.rightSinkPosition, scene);
+
+        for (let [name,wall] of Object.entries(def.wall.walls)) {
+            addWallToScene(`wall-${name}`, wall.width, wall.depth, wall.position, scene);
+        }
     }
 
     return {

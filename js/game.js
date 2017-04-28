@@ -32,10 +32,12 @@ window.rcBowling.game = (function () {
                         ({x: sum.x + val.x, y: sum.y + val.y, z: sum.z + val.z}),
                     {x: 0, y: 0, z: 0});
 
+
+                let forceAdjustment = def.physics.mobileThrowForceAdjustment;
                 throwBall(new BABYLON.Vector3(
-                    avgForce.x * def.physics.mobileThrowForceAdjustment.x,
-                    avgForce.y * def.physics.mobileThrowForceAdjustment.y,
-                    avgForce.z * def.physics.mobileThrowForceAdjustment.z
+                    avgForce.x * forceAdjustment.x,
+                    avgForce.y * forceAdjustment.y,
+                    avgForce.z * forceAdjustment.z
                 ));
             }
 
