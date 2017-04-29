@@ -54,7 +54,7 @@ window.rcBowling.game = (function () {
             let xPercent = e.screenX / window.screen.width;
 
             window.rcBowling.bowlingSet.getBowlingBall().position = new BABYLON.Vector3(
-                xPercent * def.floor.track.width - def.floor.track.width / 2,
+                xPercent * def.floor.floors.track.width - def.floor.floors.track.width / 2,
                 def.ball.initialPosition.y,
                 def.ball.initialPosition.z
             );

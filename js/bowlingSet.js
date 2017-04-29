@@ -125,7 +125,7 @@ window.rcBowling.bowlingSet = (function () {
             let yR = val.rotationQuaternion.toEulerAngles().y;
             let y = val.position.y;
             let pinKnockedOut = yR > 0.3 || yR < -0.3;
-            let pinFallUnderTrack = y < def.floor.track.position.y - 1;
+            let pinFallUnderTrack = y < def.floor.floors.track.position.y - 1;
 
             return total + (pinKnockedOut || pinFallUnderTrack ? 1 : 0);
         }, 0);
@@ -137,10 +137,10 @@ window.rcBowling.bowlingSet = (function () {
         let pos = bowlingBall.position;
         let v = bowlingBall.impostor.getLinearVelocity();
 
-        let ballOutsideTrack = pos.z > def.floor.track.depth
-            || pos.x > def.floor.track.width
-            || pos.x < def.floor.track.width * -1
-            || pos.y < def.floor.track.position.y - 1;
+        let ballOutsideTrack = pos.z > def.floor.floors.track.depth
+            || pos.x > def.floor.floors.track.width
+            || pos.x < def.floor.floors.track.width * -1
+            || pos.y < def.floor.floors.track.position.y - 1;
 
         let ballStopped = v.x < 0.01 && v.y < 0.01 && v.z < 0.01;
 
@@ -158,7 +158,7 @@ window.rcBowling.bowlingSet = (function () {
             return false;
         }
 
-        let middleOfTrackZ = def.floor.track.depth / 2;
+        let middleOfTrackZ = def.floor.floors.track.depth / 2;
 
         return bowlingBall.position.z > middleOfTrackZ;
     }

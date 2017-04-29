@@ -9,8 +9,8 @@ window.rcBowling.camera = (function () {
             target: new BABYLON.Vector3(0, 0.9, 2)
         },
         pins: {
-            position: new BABYLON.Vector3(0, 1.5, 14),
-            target: new BABYLON.Vector3(0, 0.9, 18)
+            position: new BABYLON.Vector3(0, 0.5, 16),
+            target: new BABYLON.Vector3(0, 0.2,17)
         }
     };
 

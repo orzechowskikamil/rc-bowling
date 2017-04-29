@@ -41,8 +41,8 @@ window.rcBowling.track = (function () {
                 depth: depth
             }, scene);
             sinkWallMesh.material = plasticMaterial;
-            sinkWallMesh.position = positionVector.add(new BABYLON.Vector3(x, y, 0));
-            sinkWallMesh.rotation = new BABYLON.Vector3(0, 0, angle);
+            sinkWallMesh.position = positionVector.add(new BABYLON.Vector3(x, y-0.02, 0));
+            sinkWallMesh.rotation = new BABYLON.Vector3(0.001, 0, angle);
             sinkWallMesh.impostor = new BABYLON.PhysicsImpostor(sinkWallMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: def.sink.mass,
                 friction: def.sink.friction,
@@ -71,15 +71,23 @@ window.rcBowling.track = (function () {
         }
     }
 
-    function addWallToScene(name, width, depth, position, scene) {
+    function addWallToScene(name, width, height, depth, position,physics,receiveShadows, scene) {
         let trackMesh = BABYLON.MeshBuilder.CreateBox(name, {
             width: width,
-            height: def.wall.height,
+            height: height,
             depth: depth,
         }, scene);
         trackMesh.position = position;
-        trackMesh.receiveShadows = true;
-        trackMesh.material = woodMaterial.clone(`wall-${name}-material`);
+
+        trackMesh.material = plasticMaterial.clone(`wall-${name}-material`);
+        if (physics) {
+            trackMesh.impostor = new BABYLON.PhysicsImpostor(trackMesh, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: def.wall.mass,
+                friction: def.wall.friction,
+                restitution: def.wall.restitution
+            }, scene);
+        }
+        if(receiveShadows){ trackMesh.receiveShadows = true;}
     }
 
     function addTrackToScene(scene) {
@@ -94,7 +102,7 @@ window.rcBowling.track = (function () {
         addSinkToScene('right-sink', def.sink.rightSinkPosition, scene);
 
         for (let [name,wall] of Object.entries(def.wall.walls)) {
-            addWallToScene(`wall-${name}`, wall.width, wall.depth, wall.position, scene);
+            addWallToScene(`wall-${name}`, wall.width, wall.height, wall.depth, wall.position,wall.physics, wall.shadowGenerator,scene);
         }
     }
 

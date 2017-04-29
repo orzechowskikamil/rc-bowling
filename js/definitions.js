@@ -28,15 +28,15 @@ window.rcBowling.definitions = (function () {
 
 
     def.sink = {
-        width: 0.17,
+        width: 0.25,
         mass: 0,
-        depth: 17
+        depth: 18.65
     };
 
 
     def.floor = {
         floors: {
-            track: {width: 1, depth: 18, u: 5, v: 1, physics: true},
+            track: {width: 1, depth: 19, u: 5, v: 1, physics: true},
             left: {width: 5, depth: 17, u: 5, v: 5},
             right: {width: 5, depth: 17, u: 5, v: 5},
             front: {width: 10, depth: 3, u: 1, v: 15},
@@ -61,16 +61,44 @@ window.rcBowling.definitions = (function () {
     );
     def.floor.floors.front.position = new BABYLON.Vector3(0, 0, def.floor.floors.front.depth / -2);
 
-
     def.wall = {
-        height: 2,
         walls: {
-            left: {width: 0.1, depth: 17, position: new BABYLON.Vector3(-2, 1, 0)},
-            right: {width: 0.1, depth: 17, position: new BABYLON.Vector3(2, 1, 0)},
-            leftback: {width: 4, depth: 0.1, position: new BABYLON.Vector3(-3.0, 1, 17)},
-            rightback: {width: 4, depth: 0.1, position: new BABYLON.Vector3(3.0, 1, 17)}
-        }
+            pinWindowLeft: {
+                width: 0.8,
+                height: 0.5,
+                depth: 2,
+                position: new BABYLON.Vector3(-1.15, 0.25, 17 + 1),
+                physics: true,
+                receiveShadows: true,
+            },
+            pinWindowRight: {
+                width: 0.8,
+                height: 0.5,
+                depth: 2,
+                position: new BABYLON.Vector3(1.15, 0.25, 17 + 1),
+                physics: true,
+                receiveShadows: true,
+            },
+            pinWindowTop: {
+                width: 10,
+                height: 1.5,
+                depth: 0.2,
+                position: new BABYLON.Vector3(0, 1.5 / 2 + 0.5, 17),
+            },
+            pinWindowBack: {
+                width: 1.49,
+                height: 1,
+                depth: 0.2,
+                position: new BABYLON.Vector3(0, 0, 19.05),
+                physics: true,
+                receiveShadows: true,
+            }
+        },
+        mass: 0,
+        friction: 0.1,
+        restitution: 0.1
     };
+
 
     def.pin = {
         height: 0.38,
@@ -78,7 +106,7 @@ window.rcBowling.definitions = (function () {
         modelScale: 0.022,
         friction: 0.2,
         restitution: 0.1,
-        pinSetPosition: {x: 0, y: 0.4, z: def.floor.floors.track.depth - 0.9},
+        pinSetPosition: {x: 0, y: 0.4, z: def.floor.floors.track.depth - 1.9},
         spacing: {x: 0.13, z: 0.20},
         linearDamping: 0.3,
         angularDamping: 0.3,
